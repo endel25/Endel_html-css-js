@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>ENDEL DIGITAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/perfect-scrollbar.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
+    <link defer rel="stylesheet" type="text/css" media="screen" href="assets/css/animate.css" />
+    <link rel="stylesheet" href="assets/css/vms _css/PreApprovalEntry.css">
+    
+</head>
+
+<body x-data="main" class="relative overflow-x-hidden font-nunito text-sm font-normal antialiased"
+    :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.theme === 'dark' || $store.app.isDarkMode ?  'dark' : '', $store.app.menu, $store.app.layout,$store.app.rtlClass]">
+    <!-- sidebar menu overlay -->
+    <div id="sidebar-menu-overlay-container"></div>
+
+    <!-- screen loader -->
+    <div id="screen-loader-container"></div>
+
+    <!-- scroll to top button -->
+    <div id="scroll-to-topdown-container"></div>
+
+    <!-- start theme customizer section -->
+    <div id="theme-customizer-container"></div>
+    <!-- end theme customizer section -->
+
+    <div class="main-container min-h-screen text-black dark:text-white-dark" :class="[$store.app.navbar]">
+        <!-- start sidebar section -->
+        <div id="sidebar-container"></div>
+        <!-- end sidebar section -->
+
+        <div class="main-content flex min-h-screen flex-col">
+            <!-- start header section -->
+            <div id="header-container"></div>
+            <!-- end header section -->
+
+            <div class="dvanimation animate__animated p-6 flex-grow">
+                <!-- start main content section -->
+                <div class="table-container">
+                    <div class="px-6 py-4 border-b text-xl font-semibold flex items-center justify-between">
+                        <span>Visitor Appointment Data</span>
+                        <div class="mb-2">
+                            <a href="PreApproval.html" class="btn btn-sm btn-primary rounded-full">
+                                Schedule Appointment
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Dropdown and Search -->
+                    <div class="px-4 py-2 flex items-center justify-between">
+                        <div class="dataTable-dropdown">
+                            <label>
+                                <select class="dataTable-selector" id="entriesPerPage">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="15">15</option>
+                                    <option value="20">20</option>
+                                    <option value="25">25</option>
+                                </select> entries per page
+                            </label>
+                        </div>
+                        <div class="dataTable-search">
+                            <input class="dataTable-input" id="searchInput" placeholder="Search..." type="text">
+                        </div>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table id="visitorTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Contact Number</th>
+                                    <th>National ID</th>
+                                    <th>NDA Approve</th>
+                                    <th>Safety Approve</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitorTableBody">
+                                <!-- Rows will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Panel Footer -->
+                    <div class="panel-footer" id="panelFooter">
+                        <span id="footerText">Showing 0 to 0 of 0 entries</span>
+                        <div class="pagination" style="float: right; margin-left: 10px;">
+                            <button id="previousBtn">Previous</button>
+                            <button id="nextBtn">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal for Visitor Details Form -->
+                <div id="visitorModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="px-2 py-2 border-b text-xl font-semibold text-center"
+                            style="font-family: 'Nunito', sans-serif; position: relative;">
+                            Visitor Appointment Details
+                            <span class="close"
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"
+                                onclick="closevisitorModal()">×</span>
+                        </div>
+
+                        <form id="visitorForm" class="p-3 space-y-4"  autocomplete="off">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="hidden" id="edit-id" name="id">
+                                <!-- First Name -->
+                                <div class="form-group">
+                                    <label for="edit-firstname" class="w-40 text-sm font-medium">First Name</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-firstname" name="firstname"
+                                            placeholder="Enter first name"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-firstname"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="form-group">
+                                    <label for="edit-lastname" class="w-40 text-sm font-medium">Last Name</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-lastname" name="lastname"
+                                            placeholder="Enter last name"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-lastname"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="form-group">
+                                    <label for="edit-gender" class="w-40 text-sm font-medium">Gender</label>
+                                    <div class="flex-1">
+                                        <select id="edit-gender" name="gender"
+                                            class="w-full text-xs px-3 py-2 border rounded">
+                                            <option value="">Select gender</option>
+                                        </select>
+                                        <span class="error text-red-500 text-xs" id="error-gender"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Number -->
+                                <div class="form-group">
+                                    <label for="edit-contactnumber" class="w-40 text-sm font-medium">Contact
+                                        Number</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-contactnumber" name="contactnumber"
+                                            placeholder="Enter contact number"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-contactnumber"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="edit-email" class="w-40 text-sm font-medium">Email Address</label>
+                                    <div class="flex-1">
+                                        <input type="email" id="edit-email" name="email"
+                                            placeholder="Enter email address"
+                                            class="w-full text-xs px-3 py-2 border rounded"
+                                            readonly />
+                                        <span class="error text-red-500 text-xs" id="error-email"></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Date -->
+                                <div class="form-group">
+                                    <label for="edit-date" class="w-40 text-sm font-medium">Meeting Date</label>
+                                    <div class="flex-1">
+                                        <input type="date" id="edit-date" name="date"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-date"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Time -->
+                                <div class="form-group">
+                                    <label for="edit-time" class="w-40 text-sm font-medium">Meeting Time</label>
+                                    <div class="flex-1">
+                                        <input type="time" id="edit-time" name="time"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-time"></span>
+                                    </div>
+                                </div>
+
+                                <!-- National ID -->
+                                <div class="form-group">
+                                    <label for="edit-nationalid" class="w-40 text-sm font-medium">National ID</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-nationalid" name="nationalid"
+                                            placeholder="Enter national ID"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-nationalid"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Photo Upload -->
+                                <div class="form-group">
+                                    <label for="edit-photo" class="w-40 text-sm font-medium pt-2">Visitor Photo</label>
+                                    <div class="flex-1">
+                                        <div class="flex items-center">
+                                            <input type="file" id="edit-photo" name="photo"
+                                                accept="image/jpeg,image/png,image/jpg" class="hidden"
+                                                onchange="previewImage(this, 'mainPreview')" />
+                                            <button type="button"
+                                                class="text-xs px-3 py-2 border rounded choose-photo-btn"
+                                                onclick="showModal('edit-photo')">Choose Photo</button>
+                                            <img id="mainPreview" class="w-24 h-16 rounded border hidden photo-preview"
+                                                alt="Photo Preview" />
+                                        </div>
+                                        <span class="error text-red-500 text-xs block mt-1" id="error-photo"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Visit Purpose -->
+                                <div class="form-group">
+                                    <label for="edit-visit" class="w-40 text-sm font-medium">Purpose of Visit</label>
+                                    <select id="edit-visit" name="visit"
+                                        class="w-full text-xs px-3 py-2 border rounded">
+                                        <option value="">Select purpose</option>
+                                    </select>
+                                    <span class="error text-xs text-red-500" id="error-visit"></span>
+                                </div>
+
+                                <!-- Person Name -->
+                                <div class="form-group">
+                                    <label for="edit-personname" class="w-40 text-sm font-medium">Person Name</label>
+                                    <div class="flex-1 relative">
+                                        <input type="text" id="edit-personname" name="personname"
+                                            placeholder="Enter person to meet"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <div id="edit-personname-suggestions"
+                                            class="absolute w-full bg-white border rounded shadow-lg hidden z-10 max-h-60 overflow-y-auto">
+                                        </div>
+                                        <span class="error text-red-500 text-xs" id="error-personname"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Department -->
+                                <div class="form-group">
+                                    <label for="edit-department" class="w-40 text-sm font-medium">Department</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-department" name="department"
+                                            placeholder="Enter department"
+                                            class="w-full text-xs px-3 py-2 border rounded" readonly />
+                                        <span class="error text-red-500 text-xs" id="error-department"></span>
+                                    </div>
+                                </div>
+
+
+                                <!-- Expected Duration -->
+                                <div class="form-group">
+                                    <label for="edit-durationtime" class="w-40 text-sm font-medium">Expected
+                                        Duration</label>
+                                    <div class="flex-1">
+                                        <div class="duration-group">
+                                            <select id="edit-durationUnit" name="durationUnit"
+                                                class="text-xs px-3 py-2 border rounded">
+                                                <option value="">Select unit</option>
+                                            </select>
+                                            <input type="number" id="edit-durationtime" name="durationtime"
+                                                placeholder="Enter duration" class="text-xs px-3 py-2 border rounded"
+                                                min="1" />
+                                        </div>
+                                        <span class="error text-red-500 text-xs" id="error-durationtime"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Visitor Type -->
+                                <div class="form-group">
+                                    <label for="edit-visitortype" class="w-40 text-sm font-medium">Visitor Type</label>
+                                    <div class="flex-1">
+                                        <select id="edit-visitortype" name="visitortype"
+                                            class="w-full text-xs px-3 py-2 border rounded">
+                                            <option value="">Select visitor type</option>
+                                        </select>
+                                        <span class="error text-red-500 text-xs" id="error-visitortype"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Type -->
+                                <div class="form-group">
+                                    <label for="edit-vehicletype" class="w-40 text-sm font-medium">Vehicle Type</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-vehicletype" name="vehicletype"
+                                            placeholder="Enter vehicle type"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-vehicletype"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Number -->
+                                <div class="form-group">
+                                    <label for="edit-vehiclenumber" class="w-40 text-sm font-medium">Vehicle
+                                        Number</label>
+                                    <div class="flex-1">
+                                        <input type="text" id="edit-vehiclenumber" name="vehiclenumber"
+                                            placeholder="Enter vehicle number"
+                                            class="w-full text-xs px-3 py-2 border rounded" />
+                                        <span class="error text-red-500 text-xs" id="error-vehiclenumber"></span>
+                                    </div>
+                                </div>
+                                <!-- Driver Toggle -->
+                                <div class="flex items-center justify-left">
+                                    <label for="edit-driverToggle" class="w-40 text-sm font-medium">Include
+                                        Driver?</label>
+                                    <input type="checkbox" id="edit-driverToggle" onchange="toggleDriverDetails()"
+                                        class="ml-2" />
+                                </div>
+                            </div>
+
+                            <!-- Driver Details -->
+                            <div id="driverDetails" class="hidden border-t pt-4 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <!-- Driver Name -->
+                                    <div class="form-group">
+                                        <label for="edit-drivername" class="w-40 text-sm font-medium">Driver
+                                            Name</label>
+                                        <div class="flex-1">
+                                            <input type="text" id="edit-drivername" name="drivername"
+                                                placeholder="Enter driver name"
+                                                class="w-full text-xs px-3 py-2 border rounded" />
+                                            <span class="error text-red-500 text-xs" id="error-drivername"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Driver Mobile -->
+                                    <div class="form-group">
+                                        <label for="edit-drivermobile" class="w-40 text-sm font-medium">Driver
+                                            Mobile</label>
+                                        <div class="flex-1">
+                                            <input type="text" id="edit-drivermobile" name="drivermobile"
+                                                placeholder="Enter driver mobile"
+                                                class="w-full text-xs px-3 py-2 border rounded" />
+                                            <span class="error text-red-500 text-xs" id="error-drivermobile"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Driver National ID -->
+                                    <div class="form-group">
+                                        <label for="edit-drivernationalid" class="w-40 text-sm font-medium">Driver
+                                            National ID</label>
+                                        <div class="flex-1">
+                                            <input type="text" id="edit-drivernationalid" name="drivernationalid"
+                                                placeholder="Enter driver national ID"
+                                                class="w-full text-xs px-3 py-2 border rounded" />
+                                            <span class="error text-red-500 text-xs" id="error-drivernationalid"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Driver Photo -->
+                                    <div class="form-group">
+                                        <label for="edit-driverphoto" class="w-40 text-sm font-medium pt-2">Driver
+                                            Photo</label>
+                                        <div class="flex-1">
+                                            <div class="flex items-center">
+                                                <input type="file" id="edit-driverphoto" name="driverphoto"
+                                                    accept="image/*" onchange="previewImage(this, 'driverPreview')"
+                                                    class="hidden" />
+                                                <button type="button"
+                                                    class="text-xs px-3 py-2 border rounded choose-photo-btn1"
+                                                    onclick="showModal('edit-driverphoto')">Choose Photo</button>
+                                                <img id="driverPreview"
+                                                    class="w-24 h-16 rounded border hidden photo-preview ml-4"
+                                                    alt="Driver Photo Preview" />
+                                            </div>
+                                            <span class="error text-red-500 text-xs block mt-1"
+                                                id="error-driverphoto"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="form-group">
+                                <label for="edit-notes" class="w-40 text-sm font-medium pt-2">Notes</label>
+                                <div class="flex-1">
+                                    <textarea id="edit-notes" name="notes" rows="2" placeholder="Enter any notes..."
+                                        class="w-full text-xs px-3 py-2 border rounded"></textarea>
+                                    <span class="error text-red-500 text-xs" id="error-notes"></span>
+                                </div>
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" form="visitorForm" id="save-details"
+                                    class="btn btn-outline-primary btn-sm rounded-full !mt-6">Save Details</button>
+                                    <button type="button" id="approveBtn" class="btn btn-outline-success btn-sm rounded-full !mt-6">Approve</button>
+                                    <button type="button" id="disapproveBtn" class="btn btn-outline-danger btn-sm rounded-full !mt-6">Disapprove</button>
+                                    <button type="button" id="completeBtn" class="btn btn-sm btn-outline-primary rounded-full !mt-6">Complete</button>
+                                    <button type="button" id="exitBtn" class="btn btn-sm btn-outline-primary rounded-full !mt-6">Exit</button>
+                                
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Modal for Gallery/Camera selection -->
+                <div id="photoModal" class="modal">
+                    <div class="modal-content1">
+                        <h3>Select Photo Source</h3>
+                        <button class="gallery-btn" onclick="openGallery()">Gallery</button>
+                        <button class="camera-btn" onclick="openCamera()">Camera</button>
+                        <button class="close-btn" onclick="closeModal1()">Close</button>
+                    </div>
+                </div>
+
+                <!-- Hidden video element for camera preview -->
+                <video id="cameraPreview" style="display: none;"></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <!-- end main content section -->
+            </div>
+
+            <!-- start footer section -->
+            <div id="footer-container"></div>
+            <!-- end footer section -->
+        </div>
+    </div>
+    <script src="signin-script.js"></script>
+    <script src="assets/js/main-content-script/PreApprovalEntry-script.js"></script>
+    <script src="assets/js/alpine-collaspe.min.js"></script>
+    <script src="assets/js/alpine-persist.min.js"></script>
+    <script defer src="assets/js/alpine-ui.min.js"></script>
+    <script defer src="assets/js/alpine-focus.min.js"></script>
+    <script defer src="assets/js/alpine.min.js"></script>
+    <script src="assets/js/custom.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/vms_js/theme-script.js"></script>
+    <script src="assets/js/perfect-scrollbar.min.js"></script>
+    <script defer src="assets/js/popper.min.js"></script>
+    <script defer src="assets/js/tippy-bundle.umd.min.js"></script>
+    <script defer src="assets/js/sweetalert.min.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/vms_js/header.js"></script>
+    <script src="assets/js/vms_js/scroll-to-topdown.js"></script>
+    <script src="assets/js/vms_js/theme-customizer.js"></script>
+    <script src="assets/js/vms_js/sidebar-menu-overlay.js"></script>
+    <script src="assets/js/vms_js/sidebar.js"></script>
+    <script src="assets/js/vms_js/screen-loader.js"></script>
+    <script src="assets/js/vms_js/footer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+
+</html>

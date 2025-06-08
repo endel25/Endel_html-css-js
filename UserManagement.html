@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>ENDEL DIGITAL</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/x-icon" href="assets/images/favicon.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet" />
+        <link rel="stylesheet" type="text/css" media="screen"
+            href="assets/css/perfect-scrollbar.min.css" />
+        <link rel="stylesheet" type="text/css" media="screen"
+            href="assets/css/style.css" />
+        <link defer rel="stylesheet" type="text/css" media="screen"
+            href="assets/css/animate.css" />
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/nice-select/1.1.0/nice-select.min.css">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+        <link rel="stylesheet" href="assets/css/vms _css/UserManagement.css">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+
+    <body x-data="main"
+        class="relative overflow-x-hidden font-nunito text-sm font-normal antialiased"
+        :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.theme === 'dark' || $store.app.isDarkMode ?  'dark' : '', $store.app.menu, $store.app.layout,$store.app.rtlClass]">
+        <!-- sidebar menu overlay -->
+        <div id="sidebar-menu-overlay-container"></div>
+
+        <!-- screen loader -->
+        <div id="screen-loader-container"></div>
+
+        <!-- scroll to top button -->
+        <div id="scroll-to-topdown-container"></div>
+
+        <!-- start theme customizer section -->
+        <div id="theme-customizer-container"></div>
+        <!-- end theme customizer section -->
+
+        <div class="main-container min-h-screen text-black dark:text-white-dark"
+            :class="[$store.app.navbar]">
+            <!-- start sidebar section -->
+            <div id="sidebar-container"></div>
+            <!-- end sidebar section -->
+
+            <div class="main-content flex min-h-screen flex-col">
+                <!-- start header section -->
+                <div id="header-container"></div>
+                <!-- end header section -->
+
+                <div class="dvanimation animate__animated p-6 flex-grow"
+                    :class="[$store.app.animation]">
+                    <!-- start main content section -->
+                    <div class="panel">
+                        <div
+                            class="px-4 py-2 border-b text-xl font-semibold flex items-center justify-between">
+                            <h2>User Management Stack</h2>
+                            <div>
+                                <button
+                                    class="btn btn-sm btn-primary rounded-full"
+                                    style="padding: 8px 16px;"
+                                    onclick="openAddUserModal()">Add
+                                    User</button>
+                            </div>
+                        </div>
+                        <!-- Add the dropdown here -->
+                        <div
+                            class="px-2 py-2 flex items-center justify-between">
+                            <div class="dataTable-dropdown">
+                                <label>
+                                    <select class="dataTable-selector"
+                                        id="entriesPerPage">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                    </select> entries per page
+                                </label>
+                            </div>
+                            <div class="dataTable-search">
+                                <input class="dataTable-input"
+                                    placeholder="Search..." type="text"
+                                    id="searchInput">
+                            </div>
+                        </div>
+                        <table id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>User Name</th>
+                                    <th>Active</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <!-- Data will be populated dynamically -->
+                            </tbody>
+                        </table>
+                        <!-- Add the panel footer here -->
+                        <div class="panel-footer" id="panelFooter">
+                            Showing 0 to 0 of 0 entries
+                        </div>
+                        <!-- Add pagination controls -->
+                        <div id="paginationControls"
+                            style="display: flex; justify-content: flex-end; padding: 8px 16px; gap: 10px;">
+                            <!-- Pagination buttons will be populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Add User Modal -->
+                    <div class="modal" id="addUserModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5>Add User</h5>
+                                <span class="close-btn"
+                                    onclick="closeAddUserModal()">×</span>
+                            </div>
+                            <div class="form-container">
+                                <form id="addUserForm" autocomplete="off">
+                                    <div class="form-row">
+                                        <!-- Left Column -->
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label for="FirstName">First
+                                                    Name</label>
+                                                <input type="text"
+                                                    id="FirstName"
+                                                    placeholder="Enter First Name"
+                                                    name="firstName">
+                                                <span class="error-message"
+                                                    id="error-firstName"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="LastName">Last
+                                                    Name</label>
+                                                <input type="text" id="LastName"
+                                                    placeholder="Enter Last Name"
+                                                    name="lastName">
+                                                <span class="error-message"
+                                                    id="error-lastName"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email">User
+                                                    Name</label>
+                                                <input type="text" id="email"
+                                                    placeholder="Enter User Name"
+                                                    name="userName">
+                                                <span class="error-message"
+                                                    id="error-userName"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="password">Password</label>
+                                                <input type="password"
+                                                    id="password"
+                                                    placeholder="Enter Password"
+                                                    name="password">
+                                                <span class="error-message"
+                                                    id="error-password"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="ConfirmPassword">Confirm
+                                                    Password</label>
+                                                <input type="password"
+                                                    id="ConfirmPassword"
+                                                    placeholder="Confirm Password"
+                                                    name="ConfirmPassword">
+                                                <span class="error-message"
+                                                    id="error-ConfirmPassword"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="ContactNo">Contact
+                                                    No.</label>
+                                                <input type="text"
+                                                    id="ContactNo"
+                                                    placeholder="Enter Contact No."
+                                                    name="contactNo">
+                                                <span class="error-message"
+                                                    id="error-contactNo"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="EmailId">Email
+                                                    Id</label>
+                                                <input type="email" id="EmailId"
+                                                    placeholder="Enter Email Id"
+                                                    name="emailId">
+                                                <span class="error-message"
+                                                    id="error-emailId"></span>
+                                            </div>
+                                        </div>
+                                        <!-- Right Column -->
+                                        <div class="form-column">
+                                            <div class="form-group">
+                                                <label
+                                                    for="Address">Address</label>
+                                                <input type="text" id="Address"
+                                                    placeholder="Enter Address"
+                                                    name="address">
+                                                <span class="error-message"
+                                                    id="error-address"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>User Role</label>
+                                                <select id="UserRoleId"
+                                                    name="userRoleId">
+                                                    <option value>Select
+                                                        Userrole</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-userRoleId"></span>
+                                                <script>
+                                                fetch('https://192.168.1.82:3001/userroles/active')
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        const select = document.getElementById('UserRoleId');
+                                                        data.forEach(role => {
+                                                            const option = document.createElement('option');
+                                                            option.value = role.id;
+                                                            option.textContent = role.userRoleName;
+                                                            select.appendChild(option);
+                                                        });
+                                                    })
+                                                    .catch(error => {
+                                                        console.error('Error fetching user roles:', error);
+                                                    });
+                                            </script>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="EmployeeNo">Employee
+                                                    No</label>
+                                                <input type="text"
+                                                    id="EmployeeNo"
+                                                    name="employeeNo"
+                                                    placeholder="Enter Employee No">
+                                                <span class="error-message"
+                                                    id="error-employeeNo"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="Department">Department</label>
+                                                <select id="Department"
+                                                    name="department"
+                                                    class="form-select">
+                                                    <option value disabled
+                                                        selected>Select
+                                                        Department</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-department"></span>
+                                                <script>
+                                                (async () => {
+                                                    const API_URL = 'https://192.168.1.82:3001/department';
+                                                    try {
+                                                        console.log('Attempting to fetch departments from ' + API_URL);
+                                                        const controller = new AbortController();
+                                                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                                        const response = await fetch(API_URL, {
+                                                            method: 'GET',
+                                                            signal: controller.signal,
+                                                            headers: { 'Accept': 'application/json' },
+                                                            mode: 'cors',
+                                                            credentials: 'omit'
+                                                        });
+                                                        clearTimeout(timeoutId);
+
+                                                        if (!response.ok) {
+                                                            throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                                                        }
+
+                                                        const text = await response.text();
+                                                        console.log('Raw API response (departments):', text);
+
+                                                        let data;
+                                                        try {
+                                                            data = JSON.parse(text);
+                                                        } catch (e) {
+                                                            throw new Error(`Invalid JSON response: ${text}`);
+                                                        }
+
+                                                        const departments = Array.isArray(data) ? data : data.data || data.departments || [];
+                                                        if (!Array.isArray(departments) || departments.length === 0) {
+                                                            throw new Error('No departments found in response');
+                                                        }
+
+                                                        console.log('Parsed departments:', departments);
+
+                                                        const select = document.getElementById('Department');
+                                                        select.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                                                        departments.forEach(department => {
+                                                            const option = document.createElement('option');
+                                                            option.value = department.id;
+                                                            option.textContent = department.name || department.departmentName || 'Unknown';
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#Department").niceSelect('update');
+                                                        } else {
+                                                            console.warn('NiceSelect library not loaded');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error fetching departments:', {
+                                                            message: error.message,
+                                                            stack: error.stack,
+                                                            name: error.name
+                                                        });
+                                                        showMessage('Failed to load departments from API. Using default options.', 'error');
+
+                                                        const select = document.getElementById('Department');
+                                                        select.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                                                        const defaultOptions = [
+                                                            { id: '1', name: 'HR' },
+                                                            { id: '2', name: 'IT' },
+                                                            { id: '3', name: 'Finance' },
+                                                            { id: '4', name: 'Security' },
+                                                            { id: '5', name: 'Admin' }
+                                                        ];
+                                                        defaultOptions.forEach(department => {
+                                                            const option = document.createElement('option');
+                                                            option.value = department.id;
+                                                            option.textContent = department.name;
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#Department").niceSelect('update');
+                                                        }
+                                                    }
+                                                })();
+                                            </script>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="Designation">Designation</label>
+                                                <select id="Designation"
+                                                    name="designation">
+                                                    <option value disabled
+                                                        selected>Select
+                                                        Designation</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-designation"></span>
+                                                <script>
+                                                (async () => {
+                                                    const API_URL = 'https://192.168.1.82:3001/designation';
+                                                    try {
+                                                        console.log('Attempting to fetch designations from ' + API_URL);
+                                                        const controller = new AbortController();
+                                                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                                        const response = await fetch(API_URL, {
+                                                            method: 'GET',
+                                                            signal: controller.signal,
+                                                            headers: { 'Accept': 'application/json' },
+                                                            mode: 'cors',
+                                                            credentials: 'omit'
+                                                        });
+                                                        clearTimeout(timeoutId);
+
+                                                        if (!response.ok) {
+                                                            throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                                                        }
+
+                                                        const text = await response.text();
+                                                        console.log('Raw API response (designations):', text);
+
+                                                        let data;
+                                                        try {
+                                                            data = JSON.parse(text);
+                                                        } catch (e) {
+                                                            throw new Error(`Invalid JSON response: ${text}`);
+                                                        }
+
+                                                        const designations = Array.isArray(data) ? data : data.data || data.designations || [];
+                                                        if (!Array.isArray(designations) || designations.length === 0) {
+                                                            throw new Error('No designations found in response');
+                                                        }
+
+                                                        console.log('Parsed designations:', designations);
+
+                                                        const select = document.getElementById('Designation');
+                                                        if (!select) {
+                                                            throw new Error('Designation select element not found');
+                                                        }
+                                                        select.innerHTML = '<option value="" disabled selected>Select Designation</option>';
+                                                        designations.forEach(designation => {
+                                                            const option = document.createElement('option');
+                                                            option.value = designation.id;
+                                                            option.textContent = designation.name || designation.designationName || 'Unknown';
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#Designation").niceSelect('update');
+                                                        } else {
+                                                            console.warn('NiceSelect library not loaded');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error fetching designations:', {
+                                                            message: error.message,
+                                                            stack: error.stack,
+                                                            name: error.name
+                                                        });
+                                                        showMessage('Failed to load designations from API. Using default options.', 'error');
+
+                                                        const select = document.getElementById('Designation');
+                                                        if (select) {
+                                                            select.innerHTML = '<option value="" disabled selected>Select Designation</option>';
+                                                            const defaultOptions = [
+                                                                { id: '1', name: 'Manager' },
+                                                                { id: '2', name: 'Team Lead' },
+                                                                { id: '3', name: 'Staff' },
+                                                                { id: '4', name: 'Intern' }
+                                                            ];
+                                                            defaultOptions.forEach(designation => {
+                                                                const option = document.createElement('option');
+                                                                option.value = designation.id;
+                                                                option.textContent = designation.name;
+                                                                select.appendChild(option);
+                                                            });
+
+                                                            if (jQuery.fn.niceSelect) {
+                                                                $("#Designation").niceSelect('update');
+                                                            }
+                                                        } else {
+                                                            console.error('Designation select element not found for fallback');
+                                                        }
+                                                    }
+                                                })();
+                                            </script>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Notes</label>
+                                                <textarea name="notes"
+                                                    placeholder="Enter Notes"></textarea>
+                                                <span class="error-message"
+                                                    id="error-notes"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit"
+                                        class="btn btn-outline-primary btn-sm rounded-full"
+                                        style="padding: 10px 20px;">Create</button>
+                                </form>
+                                <style>
+                                .error-message {
+                                    color: red;
+                                    font-size: 12px;
+                                }
+
+                                .form-control.error {
+                                    border-color: red;
+                                }
+                            </style>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Edit User Modal -->
+                    <div class="modal" id="editUserModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5>Edit User</h5>
+                                <span class="close-btn"
+                                    onclick="closeEditUserModal()">×</span>
+                            </div>
+                            <div class="form-container">
+                                <form id="editUserForm" autocomplete="off">
+                                    <input type="hidden" id="editUserId"
+                                        name="userId">
+                                    <div class="form-row">
+                                        <div class="form-column">
+                                            <div class="form-group"
+                                                id="editFirstNameField">
+                                                <label for="editFirstName">First
+                                                    Name</label>
+                                                <input type="text"
+                                                    placeholder="Enter First Name"
+                                                    name="firstName"
+                                                    id="editFirstName">
+                                                <span class="error-message"
+                                                    id="error-editfirstName"></span>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editLastNameField">
+                                                <label for="editLastName">Last
+                                                    Name</label>
+                                                <input type="text"
+                                                    placeholder="Enter Last Name"
+                                                    name="lastName"
+                                                    id="editLastName">
+                                                <span class="error-message"
+                                                    id="error-editlastName"></span>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editUserNameField">
+                                                <label for="editUserName">User
+                                                    Name</label>
+                                                <input type="text"
+                                                    placeholder="Enter User Name"
+                                                    name="userName"
+                                                    id="editUserName"
+                                                    autocomplete="off">
+                                                <span class="error-message"
+                                                    id="error-edituserName"></span>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editPasswordField">
+                                                <label
+                                                    for="editPassword">Password
+                                                    (Leave blank to keep
+                                                    unchanged)</label>
+                                                <input type="password"
+                                                    placeholder="Enter New Password"
+                                                    name="password"
+                                                    id="editPassword"
+                                                    autocomplete="off">
+                                            </div>
+                                            <div class="form-group"
+                                                id="editConfirmPasswordField">
+                                                <label
+                                                    for="editConfirmPassword">Confirm
+                                                    Password</label>
+                                                <input type="password"
+                                                    placeholder="Confirm New Password"
+                                                    name="ConfirmPassword"
+                                                    id="editConfirmPassword"
+                                                    autocomplete="off">
+                                            </div>
+                                            <div class="form-group"
+                                                id="editContactNoField">
+                                                <label
+                                                    for="editContactNo">Contact
+                                                    No.</label>
+                                                <input type="text"
+                                                    placeholder="Enter Contact No."
+                                                    name="contactNo"
+                                                    id="editContactNo"
+                                                    autocomplete="off">
+                                                <span class="error-message"
+                                                    id="error-editcontactNo"></span>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editEmailIdField">
+                                                <label for="editEmailId">Email
+                                                    Id</label>
+                                                <input type="email"
+                                                    placeholder="Enter Email Id"
+                                                    name="emailId"
+                                                    id="editEmailId">
+                                                <span class="error-message"
+                                                    id="error-editemailId"></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-column">
+                                            <div class="form-group"
+                                                id="editAddressField">
+                                                <label
+                                                    for="editAddress">Address</label>
+                                                <input type="text"
+                                                    placeholder="Enter Address"
+                                                    name="address"
+                                                    id="editAddress">
+                                                <span class="error-message"
+                                                    id="error-editaddress"></span>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editUserRoleField">
+                                                <label>User Role</label>
+                                                <select id="editUserRoleId"
+                                                    name="userRoleId"
+                                                    class="form-select">
+                                                    <option value>Select
+                                                        Userrole</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-edituserRoleId"></span>
+                                                <script>
+                                                fetch('https://192.168.1.82:3001/userroles/active')
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        const select = document.getElementById('editUserRoleId');
+                                                        data.forEach(role => {
+                                                            const option = document.createElement('option');
+                                                            option.value = role.id;
+                                                            option.textContent = role.userRoleName;
+                                                            select.appendChild(option);
+                                                        });
+                                                    })
+                                                    .catch(error => {
+                                                        console.error('Error fetching user roles:', error);
+                                                    });
+                                            </script>
+                                            </div>
+                                            <div class="form-group"
+                                                id="editEmployeeNoField">
+                                                <label
+                                                    for="editEmployeeNo">Employee
+                                                    No</label>
+                                                <input type="text"
+                                                    id="editEmployeeNo"
+                                                    name="employeeNo"
+                                                    placeholder="Enter Employee No">
+                                                <span class="error-message"
+                                                    id="error-editemployeeNo"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="editDepartment">Department</label>
+                                                <select id="editDepartment"
+                                                    name="department"
+                                                    class="form-select">
+                                                    <option value
+                                                        selected>Select
+                                                        Department</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-editdepartment"></span>
+                                                <script>
+                                                (async () => {
+                                                    const API_URL = 'https://192.168.1.82:3001/department';
+                                                    try {
+                                                        console.log('Attempting to fetch departments from ' + API_URL);
+                                                        const controller = new AbortController();
+                                                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                                        const response = await fetch(API_URL, {
+                                                            method: 'GET',
+                                                            signal: controller.signal,
+                                                            headers: { 'Accept': 'application/json' },
+                                                            mode: 'cors',
+                                                            credentials: 'omit'
+                                                        });
+                                                        clearTimeout(timeoutId);
+
+                                                        if (!response.ok) {
+                                                            throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                                                        }
+
+                                                        const text = await response.text();
+                                                        console.log('Raw API response (departments):', text);
+
+                                                        let data;
+                                                        try {
+                                                            data = JSON.parse(text);
+                                                        } catch (e) {
+                                                            throw new Error(`Invalid JSON response: ${text}`);
+                                                        }
+
+                                                        const departments = Array.isArray(data) ? data : data.data || data.departments || [];
+                                                        if (!Array.isArray(departments) || departments.length === 0) {
+                                                            throw new Error('No departments found in response');
+                                                        }
+
+                                                        console.log('Parsed departments:', departments);
+
+                                                        const select = document.getElementById('editDepartment');
+                                                        select.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                                                        departments.forEach(department => {
+                                                            const option = document.createElement('option');
+                                                            option.value = department.id;
+                                                            option.textContent = department.name || department.departmentName || 'Unknown';
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#editDepartment").niceSelect('update');
+                                                        } else {
+                                                            console.warn('NiceSelect library not loaded');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error fetching departments:', {
+                                                            message: error.message,
+                                                            stack: error.stack,
+                                                            name: error.name
+                                                        });
+                                                        showMessage('Failed to load departments from API. Using default options.', 'error');
+
+                                                        const select = document.getElementById('editDepartment');
+                                                        select.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                                                        const defaultOptions = [
+                                                            { id: '1', name: 'HR' },
+                                                            { id: '2', name: 'IT' },
+                                                            { id: '3', name: 'Finance' },
+                                                            { id: '4', name: 'Security' },
+                                                            { id: '5', name: 'Admin' }
+                                                        ];
+                                                        defaultOptions.forEach(department => {
+                                                            const option = document.createElement('option');
+                                                            option.value = department.id;
+                                                            option.textContent = department.name;
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#editDepartment").niceSelect('update');
+                                                        }
+                                                    }
+                                                })();
+                                            </script>
+                                            </div>
+                                            <div class="form-group">
+                                                <label
+                                                    for="editDesignation">Designation</label>
+                                                <select id="editDesignation"
+                                                    name="designation">
+                                                    <option value disabled
+                                                        selected>Select
+                                                        Designation</option>
+                                                </select>
+                                                <span class="error-message"
+                                                    id="error-editdesignation"></span>
+                                                <script>
+                                                (async () => {
+                                                    const API_URL = 'https://192.168.1.82:3001/designation';
+                                                    try {
+                                                        console.log('Attempting to fetch designations from ' + API_URL);
+                                                        const controller = new AbortController();
+                                                        const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                                        const response = await fetch(API_URL, {
+                                                            method: 'GET',
+                                                            signal: controller.signal,
+                                                            headers: { 'Accept': 'application/json' },
+                                                            mode: 'cors',
+                                                            credentials: 'omit'
+                                                        });
+                                                        clearTimeout(timeoutId);
+
+                                                        if (!response.ok) {
+                                                            throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                                                        }
+
+                                                        const text = await response.text();
+                                                        console.log('Raw API response (designations):', text);
+
+                                                        let data;
+                                                        try {
+                                                            data = JSON.parse(text);
+                                                        } catch (e) {
+                                                            throw new Error(`Invalid JSON response: ${text}`);
+                                                        }
+
+                                                        const designations = Array.isArray(data) ? data : data.data || data.designations || [];
+                                                        if (!Array.isArray(designations) || designations.length === 0) {
+                                                            throw new Error('No designations found in response');
+                                                        }
+
+                                                        console.log('Parsed designations:', designations);
+
+                                                        const select = document.getElementById('editDesignation');
+                                                        if (!select) {
+                                                            throw new Error('Designation select element not found');
+                                                        }
+                                                        select.innerHTML = '<option value="" disabled selected>Select Designation</option>';
+                                                        designations.forEach(designation => {
+                                                            const option = document.createElement('option');
+                                                            option.value = designation.id;
+                                                            option.textContent = designation.name || 'Unknown';
+                                                            select.appendChild(option);
+                                                        });
+
+                                                        if (jQuery.fn.niceSelect) {
+                                                            $("#editDesignation").niceSelect('update');
+                                                        } else {
+                                                            console.warn('NiceSelect library not loaded');
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error fetching designations:', {
+                                                            message: error.message,
+                                                            stack: error.stack,
+                                                            name: error.name
+                                                        });
+                                                        showMessage('Failed to load designations from API. Using default options.', 'error');
+
+                                                        const select = document.getElementById('editDesignation');
+                                                        if (select) {
+                                                            select.innerHTML = '<option value="" disabled selected>Select Designation</option>';
+                                                            const defaultOptions = [
+                                                                { id: '1', name: 'Team Lead' },
+                                                                { id: '2', name: 'Manager' },
+                                                                { id: '3', name: 'Staff' },
+                                                                { id: '4', name: 'Intern' }
+                                                            ];
+                                                            defaultOptions.forEach(designation => {
+                                                                const option = document.createElement('option');
+                                                                option.value = designation.id;
+                                                                option.textContent = designation.name;
+                                                                select.appendChild(option);
+                                                            });
+
+                                                            if (jQuery.fn.niceSelect) {
+                                                                $("#editDesignation").niceSelect('update');
+                                                            }
+                                                        }
+                                                    }
+                                                })();
+                                            </script>
+                                            </div>
+                                            <span class="error-message"
+                                                id="error-editdesignation"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Notes</label>
+                                            <textarea name="notes"
+                                                placeholder="Enter Notes"
+                                                id="editNotes"></textarea>
+                                            <span class="error-message"
+                                                id="error-editnotes"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="btn btn-outline-primary btn-sm rounded-full"
+                                    style="padding: 10px 20px;">Update</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- end main content section -->
+                <!-- start footer section -->
+                <div id="footer-container"></div>
+                <!-- end footer section -->
+            </div>
+        </div>
+
+        <script src="assets/js/alpine-collaspe.min.js"></script>
+        <script src="assets/js/alpine-persist.min.js"></script>
+        <script defer src="assets/js/alpine-ui.min.js"></script>
+        <script defer src="assets/js/alpine-focus.min.js"></script>
+        <script defer src="assets/js/alpine.min.js"></script>
+        <script src="assets/js/custom.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
+
+        <!-- Backend Script -->
+        <script src="signin-script.js"></script>
+        <script
+            src="assets/js/main-content-script/UserManagement-script.js"></script>
+        <script src="assets/js/vms_js/theme-script.js"></script>
+        <script src="assets/js/auth.js"></script>
+        <script src="assets/js/perfect-scrollbar.min.js"></script>
+        <script defer src="assets/js/popper.min.js"></script>
+        <script defer src="assets/js/tippy-bundle.umd.min.js"></script>
+        <script defer src="assets/js/sweetalert.min.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+            defer></script>
+        <script src="assets/js/vms_js/header.js"></script>
+        <script src="assets/js/vms_js/scroll-to-topdown.js"></script>
+        <script src="assets/js/vms_js/theme-customizer.js"></script>
+        <script src="assets/js/vms_js/sidebar-menu-overlay.js"></script>
+        <script src="assets/js/vms_js/sidebar.js"></script>
+        <script src="assets/js/vms_js/screen-loader.js"></script>
+        <script src="assets/js/vms_js/footer.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+            defer></script>
+    </body>
+
+</html>

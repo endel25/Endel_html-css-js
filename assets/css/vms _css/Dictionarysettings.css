@@ -1,0 +1,66 @@
+
+        .modal {
+            transition: opacity 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal:not(.hidden) {
+            opacity: 1;
+        }
+
+        .btn-primary {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+        }
+
+        .dark .btn-primary {
+            background-color: #6366f1;
+            color: #fff;
+        }
+
+        .dark .btn-outline-primary:hover{
+            border-color: #6366f1;
+            background-color: #6366f1;
+            color: #fff;
+        }
+
+
+        .btn-outline-secondary {
+            border: 1px solid #6b7280;
+            color: #6b7280;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6366f1;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 3px;
+            margin-left: 0px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #0d0d0e;
+        }
+
+        .action-btn:hover {
+            color: #4361ee;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark .action-btn {
+            color: #cbd5e1;
+        }
+        .dark .action-btn:hover {
+            color: #818cf8;
+        }
+
+

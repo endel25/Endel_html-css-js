@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>ENDEL DIGITAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/perfect-scrollbar.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
+    <link defer rel="stylesheet" type="text/css" media="screen" href="assets/css/animate.css" />
+    <link rel="stylesheet" href="assets/css/vms _css/index.css" />
+</head>
+
+<body x-data="main" class="relative overflow-x-hidden font-nunito text-sm font-normal antialiased"
+    :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.theme === 'dark' || $store.app.isDarkMode ?  'dark' : '', $store.app.menu, $store.app.layout,$store.app.rtlClass]">
+    <!-- sidebar menu overlay -->
+    <div id="sidebar-menu-overlay-container"></div>
+
+    <!-- screen loader -->
+    <div id="screen-loader-container"></div>
+
+    <!-- scroll to top button -->
+    <div id="scroll-to-topdown-container"></div>
+
+    <!-- Create Gatepass sticky button -->
+    <a href="Spot.html">
+        <div class="sticky-button" id="sticky-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Create Visitor Gatepass</span>
+        </div>
+    </a>
+
+    <!-- start theme customizer section -->
+    <div id="theme-customizer-container"></div>
+    <!-- end theme customizer section -->
+
+    <div class="main-container min-h-screen text-black dark:text-white-dark" :class="[$store.app.navbar]">
+        <!-- start sidebar section -->
+        <div id="sidebar-container"></div>
+        <!-- end sidebar section -->
+
+        <div class="main-content flex min-h-screen flex-col">
+            <!-- start header section -->
+            <div id="header-container"></div>
+            <!-- end header section -->
+
+            <div class="dvanimation animate__animated flex-grow" :class="[$store.app.animation]">
+                <!-- start main content section -->
+                <div x-data="sales" class="p-6">
+                    <!--start main content-->
+                    <div class="mb-6 grid grid-cols-1 gap-6 text-white sm:grid-cols-2 xl:grid-cols-4">
+                        <!-- Total Visitors -->
+                        <div class="panel2 max-w-md mx-200 bg-gradient-to-r from-blue-500 to-cyan-400 p-6 rounded-lg shadow-lg card cursor-pointer"
+                            onclick="window.location.href='SpotEntry.html'">
+                            <div class="grid grid-cols-2 items-center text-white">
+                                <!-- Left side: label + icon -->
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-md font-semibold">Total Visitor Passes</div>
+                                </div>
+                                <!-- Right side: count -->
+                                <div class="text-3xl font-bold text-right" id="totalVisitorsCount">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Approved Passes -->
+                        <div class="panel2 max-w-md mx-200 bg-gradient-to-r from-violet-500 to-violet-400 p-6 rounded-lg shadow-lg card cursor-pointer"
+                            onclick="window.location.href='Approvedpasses.html'">
+                            <div class="grid grid-cols-2 items-center text-white">
+                                <!-- Left side: icon + label -->
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-md font-semibold">Approved Passes</div>
+                                </div>
+                                <!-- Right side: count -->
+                                <div class="text-3xl font-bold text-right" id="approvedCount">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Disapproved Passes -->
+                        <div class="panel2 max-w-md mx-200 bg-gradient-to-r from-blue-500 to-blue-400 p-6 rounded-lg shadow-lg card cursor-pointer"
+                            onclick="window.location.href='Disapprovedpasses.html'">
+                            <div class="grid grid-cols-2 items-center text-white">
+                                <!-- Left: icon + label -->
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-md font-semibold">Disapproved Passes</div>
+                                </div>
+                                <!-- Right: count -->
+                                <div class="text-3xl font-bold text-right" id="disapprovedCount">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Total Exit Passes -->
+                        <div class="panel2 max-w-md mx-200 bg-gradient-to-r from-fuchsia-500 to-fuchsia-400 p-6 rounded-lg shadow-lg card cursor-pointer"
+                            onclick="window.location.href='Totalexitpasses.html'">
+                            <div class="grid grid-cols-2 items-center text-white">
+                                <!-- Left: icon + label -->
+                                <div class="flex items-center space-x-2">
+                                    <div class="text-md font-semibold">Total Exit Passes</div>
+                                </div>
+                                <!-- Right: count -->
+                                <div class="text-3xl font-bold text-right" id="exitCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Existing Tables -->
+                    <div class="mb-0 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <!-- ✅ Upcoming Appointments Panel with Working Search -->
+                        <div class="panel" x-data="upcomingAppointments" x-init="fetchUpcomingAppointments()">
+                            <div class="mb-3 flex items-center justify-between">
+                                <h3 class="text-lg font-bold"><b>Upcoming Appointment</b></h3>
+                                <div class="dataTable-search">
+                                    <input class="dataTable-input" placeholder="Search..." type="text"
+                                        :value="searchQuery" @input="searchQuery = $event.target.value"
+                                        autocomplete="off" spellcheck="false" />
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <div class="table-container">
+                                    <table class="table-hover whitespace-nowrap w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>First Name</th>
+                                                <th>Last Name</th>
+                                                <th>Date</th>
+                                                <th>Visit Time</th>
+                                                <th>Type Of Passes</th>
+                                                <th>Host</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- If no matches -->
+                                            <template x-if="filteredAppointments.length === 0">
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No appointments available</td>
+                                                </tr>
+                                            </template>
+
+                                            <!-- Render filtered list -->
+                                            <template x-for="appointment in filteredAppointments" :key="appointment.id">
+                                                <tr>
+                                                    <td x-text="appointment.firstName"></td>
+                                                    <td x-text="appointment.lastName"></td>
+                                                    <td x-text="appointment.date"></td>
+                                                    <td x-text="appointment.allocatedTime"></td>
+                                                    <td x-text="appointment.typeOfPass"></td>
+                                                    <td>
+                                                        <span class="host-name" x-text="appointment.host"
+                                                            :title="`Department: ${appointment.department}, Designation: ${appointment.designation}`"></span>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ✅ Today's Visitor Table Panel with Search -->
+                        <div class="panel" x-data="todaysVisitors" x-init="fetchTodaysVisitors()">
+                            <div class="mb-3 flex items-center justify-between">
+                                <h3 class="text-lg font-bold"><b>Today's Visitor</b></h3>
+                                <div class="dataTable-search">
+                                    <input class="dataTable-input" placeholder="Search..." type="text" :value="searchQuery"
+                                        @input="searchQuery = $event.target.value" autocomplete="off" spellcheck="false" />
+                                </div>
+                            </div>
+                        
+                            <div class="overflow-x-auto">
+                                <div class="table-container">
+                                    <table class="table-hover whitespace-nowrap w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>First Name</th>
+                                                <th>Last Name</th>
+                                                <th>Visit Time</th>
+                                                <th>Host</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Show if no results -->
+                                            <template x-if="filteredVisitors.length === 0">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No visitors available</td>
+                                                </tr>
+                                            </template>
+                        
+                                            <!-- Loop through filtered list -->
+                                            <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
+                                                <tr>
+                                                    <td x-text="visitor.firstName"></td>
+                                                    <td x-text="visitor.lastName"></td>
+                                                    <td x-text="visitor.allocatedTime"></td>
+                                                    <td>
+                                                        <span class="host-name" x-text="visitor.host"
+                                                            :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Charts Section in 2 Columns -->
+                        <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-2">
+                        
+                            <!-- Visitors by Status Chart -->
+                            <div class="panel1">
+                                <h3 class="mb-2 text-lg font-bold"><b>Visitors Status</b></h3>
+                                <div class="chart-container">
+                                    <canvas id="chart-status" class="h-40"></canvas>
+                                </div>
+                            </div>
+                            <!-- Types of Passes Chart -->
+                            <div class="panel1">
+                                <h3 class="mb-2 text-lg font-bold"><b>Types of Passes</b></h3>
+                                <div class="chart-container">
+                                    <canvas id="chart-type" class="h-40"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-5 grid grid-cols-1">
+                        <!-- ✅ Visitor Details Table Panel with Search -->
+                        <div class="panel3" x-data="visitorDetails" x-init="fetchVisitorDetails()">
+                            <div class="mb-3 flex items-center justify-between">
+                                <h3 class="text-lg font-bold"><b>Today's Visitor Details</b></h3>
+                                <div class="dataTable-search">
+                                    <input class="dataTable-input" placeholder="Search..." type="text"
+                                        :value="searchQuery" @input="searchQuery = $event.target.value"
+                                        autocomplete="off" spellcheck="false" />
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div class="table-container1">
+                                    <table class="table-hover whitespace-nowrap w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>First Name</th>
+                                                <th>Last Name</th>
+                                                <th>Visit Time</th>
+                                                <th>Type Of Passes</th>
+                                                <th>Host</th>
+                                                <th>Purpose</th>
+                                                <th>National ID</th>
+                                                <th>Pending</th>
+                                                <th>InCampus</th>
+                                                <th>Complete</th>
+                                                <th>Exit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- If no matches -->
+                                            <template x-if="filteredVisitors.length === 0">
+                                                <tr>
+                                                    <td colspan="11" class="text-center">No visitors available</td>
+                                                </tr>
+                                            </template>
+
+                                            <!-- Filtered Rows -->
+                                            <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
+                                                <tr>
+                                                    <td x-text="visitor.firstName"></td>
+                                                    <td x-text="visitor.lastName"></td>
+                                                    <td x-text="visitor.allocatedTime"></td>
+                                                    <td x-text="visitor.typeOfPass"></td>
+                                                    <td>
+                                                        <span class="host-name" x-text="visitor.host"
+                                                            :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
+                                                    </td>
+                                                    <td x-text="visitor.purpose"></td>
+                                                    <td x-text="visitor.nationalId"></td>
+                                                    <!-- Progress Steps -->
+                                                    <td colspan="4" class="td1">
+                                                        <!-- Use renderProgressSteps to dynamically render the progress steps -->
+                                                        <div x-html="renderProgressSteps(visitor)"></div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end main content section -->
+            </div>
+
+            <!-- start footer section -->
+            <div id="footer-container"></div>
+            <!-- end footer section -->
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="assets/js/alpine-collaspe.min.js"></script>
+    <script src="assets/js/alpine-persist.min.js"></script>
+    <script defer src="assets/js/alpine-ui.min.js"></script>
+    <script defer src="assets/js/alpine-focus.min.js"></script>
+    <script defer src="assets/js/alpine.min.js"></script>
+    <script src="assets/js/custom.js"></script>
+    <script src="assets/js/main-content-script/index-main-script.js"></script>
+    <script src="assets/js/main-content-script/index-login-script.js"></script>
+    <script src="assets/js/vms_js/theme-script.js"></script>
+    <script src="assets/js/perfect-scrollbar.min.js"></script>
+    <script defer src="assets/js/popper.min.js"></script>
+    <script defer src="assets/js/tippy-bundle.umd.min.js"></script>
+    <script defer src="assets/js/sweetalert.min.js"></script>
+    <script src="assets/js/vms_js/header.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/vms_js/scroll-to-topdown.js"></script>
+    <script src="assets/js/vms_js/theme-customizer.js"></script>
+    <script src="assets/js/vms_js/sidebar-menu-overlay.js"></script>
+    <script src="assets/js/vms_js/sidebar.js"></script>
+    <script src="assets/js/vms_js/screen-loader.js"></script>
+    <script src="assets/js/vms_js/footer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+</html>

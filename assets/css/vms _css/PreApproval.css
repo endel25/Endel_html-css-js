@@ -1,0 +1,107 @@
+        .dark .btn-primary {
+            background-color: #6366f1;
+            color: #fff;
+        }
+
+        .dark .btn-outline-primary {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .dark .btn-outline-primary:hover {
+            background-color: #6366f1;
+            color: #fff;
+        }
+
+        label {
+            min-width: 160px;
+        }
+
+        .btn-outline-primary {
+            border: 1px solid #4361ee;
+            color: #4361ee;
+            background-color: transparent;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #4361ee;
+            color: white;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+
+        .error {
+            margin-top: 4px;
+            color: #dc3545;
+            font-size: 12px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px #4361ee;
+            border-color: #4361ee;
+        }
+
+        /* === Dark Mode Styles === */
+
+        .dark body {
+            background-color: #111827;
+            color: #888ea8;
+        }
+
+        .dark .bg-white {
+            background-color: #121e32 !important;
+            /* dark gray */
+        }
+
+        .dark .text-xl,
+        .dark .text-sm,
+        .dark .text-xs,
+        .dark label {
+            color: #888ea8;
+            /* light gray */
+        }
+
+        .dark input,
+        .dark select,
+        .dark textarea {
+            background-color: #1E2A42 !important;
+            border-color: #4b5563;
+            box-shadow: 0 0 0 1px #4b5563;
+            color: #888ea8;
+        }
+
+        .dark input:focus,
+        .dark select:focus,
+        .dark textarea:focus {
+            box-shadow: 0 0 0 1px #818cf8;
+            border-color: #818cf8;
+        }
+
+        .dark .shadow-md {
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .dark .border-b {
+            border-color: #4b5563;
+        }
+
+        .dark .error {
+            color: #f87171;
+            /* softer red for dark bg */
+        }
+

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>ENDEL DIGITAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/perfect-scrollbar.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css" />
+    <link defer rel="stylesheet" type="text/css" media="screen" href="assets/css/animate.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nice-select/1.1.0/nice-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/vms _css/UserRole.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body x-data="main" class="relative overflow-x-hidden font-nunito text-sm font-normal antialiased"
+    :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.theme === 'dark' || $store.app.isDarkMode ?  'dark' : '', $store.app.menu, $store.app.layout,$store.app.rtlClass]">
+    <!-- sidebar menu overlay -->
+    <div id="sidebar-menu-overlay-container"></div>
+
+    <!-- screen loader -->
+    <div id="screen-loader-container"></div>
+
+    <!-- scroll to top button -->
+    <div id="scroll-to-topdown-container"></div>
+
+    <!-- start theme customizer section -->
+    <div id="theme-customizer-container"></div>
+    <!-- end theme customizer section -->
+
+    <div class="main-container min-h-screen text-black dark:text-white-dark" :class="[$store.app.navbar]">
+        <!-- start sidebar section -->
+        <div id="sidebar-container"></div>
+        <!-- end sidebar section -->
+
+        <div class="main-content flex min-h-screen flex-col">
+            <!-- start header section -->
+            <div id="header-container"></div>
+            <!-- end header section -->
+            <div class="dvanimation animate__animated p-6 flex-grow" x-data :class="[$store.app.animation]">
+                <!-- start main content -->
+                <div class="mx-auto max-w-7xl">
+                    <!-- Roles Table with Integrated Header -->
+                    <div class="bg-white rounded-lg shadow">
+                        <!-- Header -->
+                        <div class="px-6 py-4 border-b text-xl font-semibold flex items-center justify-between">
+                            <h2>User Role Management</h2>
+                            <button id="addRoleBtn" class="btn btn-sm btn-primary rounded-full"
+                                style="padding: 8px 12px;">
+                                Add User Role
+                            </button>
+                        </div>
+
+                        <!-- Dropdown and Search -->
+                        <div class="px-4 py-2 flex items-center justify-between">
+                            <div class="dataTable-dropdown">
+                                <label>
+                                    <select class="dataTable-selector">
+                                        <option value="5">5</option>
+                                        <option value="10" selected>10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                    </select> entries per page
+                                </label>
+                            </div>
+                            <div class="dataTable-search">
+                                <input class="dataTable-input" id="searchInput" placeholder="Search..." type="text">
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th>Role Name</th>
+                                        <th>Active</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rolesTableBody" class="divide-y divide-gray-200">
+                                    <!-- Dynamically populated -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Panel Footer and Pagination -->
+                        <div class="panel-footer" id="panelFooter">
+                            Showing 0 to 0 of 0 entries
+                        </div>
+                        <div id="paginationControls" class="pagination-controls" style="display: none;"></div>
+                    </div>
+
+                    <!-- Create/Edit Role Modal -->
+                    <div id="roleModal" class="modal">
+                        <div class="modal-content" style="overflow: visible;">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 id="modalTitle" class="text-xl font-semibold text-gray-800"></h2>
+                                <span class="close-btn text-gray-500 hover:text-gray-800"
+                                    onclick="closeModal()">×</span>
+                            </div>
+                            <form id="roleForm"  autocomplete="off">
+                                <div class="mb-4 form-group">
+                                    <label class="block text-sm font-medium text-gray-700">Role Name</label>
+                                    <input type="text" id="roleName" name="UserRoleName"
+                                        class="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                                        placeholder="Enter User Role Name" required>
+                                </div>
+                                <div class="mb-4">
+                                    <h3 class="text-lg font-medium text-gray-800">Permissions</h3>
+                                    <div class="overflow-y-auto max-h-64 min-h-0 w-full block mt-2 border border-gray-200 rounded-md shadow-sm"
+                                        style="scrollbar-width: thin; scrollbar-color: #a0aec0 #edf2f7;">
+                                        <table class="w-full table-auto border-collapse">
+                                            <thead class="bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+                                                <tr>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                                                        Permission</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                                                        Read</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                                                        Create</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                                                        Update</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                                                        Delete</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                                                        Execute</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="permissionsTable" class="divide-y divide-gray-200">
+                                                <!-- Dynamically populated -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="formError" class="error-message"></div>
+                                <button type="submit" class="btn btn-outline-primary btn-sm rounded-full"
+                                    style="padding: 8px 18px;">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- end main content -->
+            </div>
+            <!-- start footer section -->
+            <div id="footer-container"></div>
+            <!-- end footer section -->
+        </div>
+    </div>
+
+    <script src="assets/js/main-content-script/UserRole-script.js"></script>
+
+    <script src="signin-script.js"></script>
+    <script src="assets/js/alpine-collaspe.min.js"></script>
+    <script src="assets/js/alpine-persist.min.js"></script>
+    <script defer src="assets/js/alpine-ui.min.js"></script>
+    <script defer src="assets/js/alpine-focus.min.js"></script>
+    <script defer src="assets/js/alpine.min.js"></script>
+    <script src="assets/js/custom.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
+    <script src="assets/js/vms_js/theme-script.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/perfect-scrollbar.min.js"></script>
+    <script defer src="assets/js/popper.min.js"></script>
+    <script defer src="assets/js/tippy-bundle.umd.min.js"></script>
+    <script defer src="assets/js/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script src="assets/js/vms_js/header.js"></script>
+    <script src="assets/js/vms_js/scroll-to-topdown.js"></script>
+    <script src="assets/js/vms_js/theme-customizer.js"></script>
+    <script src="assets/js/vms_js/sidebar-menu-overlay.js"></script>
+    <script src="assets/js/vms_js/sidebar.js"></script>
+    <script src="assets/js/vms_js/screen-loader.js"></script>
+    <script src="assets/js/vms_js/footer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</body>
+
+</html>

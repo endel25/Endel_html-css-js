@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDA Form</title>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">Non-Disclosure Agreement (NDA)</h2>
+    <form id="ndaForm" class="space-y-4" autocomplete="off">
+      <div id="ndaContent">
+        <p class="text-sm text-gray-600 mb-2">
+          This Agreement is entered into as of the <span id="agreementDate">[Date Placeholder]</span>, by and between the Visitor and Endel Digital. The Visitor and Endel Digital agree to the terms outlined in this Non-Disclosure Agreement to protect confidential information shared during the visit.
+        </p>
+        <p class="text-sm text-gray-600 mb-2">
+          The Visitor acknowledges that during the visit, they may be exposed to confidential information of Endel Digital, including but not limited to business operations, processes, methods, and other proprietary data that Endel Digital considers sensitive.
+        </p>
+        <p class="text-sm text-gray-600 mb-2">
+          The Visitor agrees not to disclose, share, or reveal any confidential information observed or received during the visit to any third party, including by verbal, written, electronic means, or any other form of communication, without the prior written consent of Endel Digital.
+        </p>
+        <p class="text-sm text-gray-600 mb-2">
+          This Agreement shall remain in effect for a period of two (2) years from the date of the visit. The Visitor shall refrain from disclosing any confidential information to third parties without prior written approval from Endel Digital, ensuring that such information remains confidential unless legally required to disclose.
+        </p>
+        <p class="text-sm text-gray-600 mb-2">
+          All confidential information disclosed during the visit remains the property of Endel Digital. The Visitor shall ensure that such information is not used for personal gain or shared with others, and agrees to comply with all legal obligations regarding the protection of said confidential information.
+        </p>
+      </div>
+      <div>
+        <div class="mt-2">
+          <input
+            id="ndaAgreement"
+            type="checkbox"
+            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          >
+          <label for="ndaAgreement" class="ml-2 text-sm text-gray-600">
+            I agree to the terms of the Non-Disclosure Agreement.
+          </label>
+        </div>
+        <div id="error-ndaAgreement" class="text-red-500 text-xs mt-1"></div>
+      </div>
+      <button
+        id="submitBtn"
+        type="submit"
+        class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        Submit
+      </button>
+    </form>
+    <div id="formError" class="text-red-500 text-xs mt-2 hidden"></div>
+  </div>
+
+  <script src="assets/js/main-content-script/nda-form-script.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>

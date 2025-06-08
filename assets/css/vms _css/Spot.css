@@ -1,0 +1,360 @@
+        .dark .btn-primary {
+            background-color: #6366f1;
+            color: #fff;
+        }
+
+        .dark .btn-outline-primary {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .dark .btn-outline-primary:hover {
+            background-color: #6366f1;
+            color: #fff;
+        }
+        .medium-toast {
+            font-size: 14px !important;
+            /* Smaller text */
+        }
+
+        .medium-toast-title {
+            font-size: 14px !important;
+            /* Match title size */
+        }
+
+        .dark .border-b {
+            border-color: #4b5563;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .form-scroll::-webkit-scrollbar-thumb {
+            background-color: #bbb;
+            border-radius: 4px;
+        }
+
+        .form-scroll::-webkit-scrollbar-track {
+            background-color: #eee;
+        }
+
+        label {
+            min-width: 160px;
+        }
+
+        .btn-outline-primary {
+            border: 1px solid #4361ee;
+            color: #4361ee;
+            background-color: transparent;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #4361ee;
+            color: white;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 50%;
+            margin-left: 42px;
+        }
+
+        .error {
+            margin-top: 4px;
+            color: #dc3545;
+            font-size: 12px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px #4361ee;
+            border-color: #4361ee;
+        }
+
+        /* Hide default file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Modal styles for photo selection */
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 300px;
+        }
+
+        .modal-content button {
+            margin: 10px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content .gallery-btn {
+            color: #4361ee;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: 1px solid #4361ee;
+            /* Added outline */
+            /* Optional: adds space between button edge and outline */
+        }
+
+        .modal-content .gallery-btn:hover {
+            background-color: #4361ee;
+            color: #fff;
+        }
+
+        .modal-content #captureBtn {
+            color: #4361ee;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: 1px solid #4361ee;
+            /* Added outline */
+            /* Optional: adds space between button edge and outline */
+        }
+
+        .modal-content #captureBtn:hover {
+            background-color: #4361ee;
+            color: #fff;
+        }
+
+        .modal-content .camera-btn {
+            color: #16a34a;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: 1px solid #16a34a;
+        }
+
+        .modal-content .camera-btn:hover {
+            background-color: #16a34a;
+            color: #fff;
+        }
+
+        .modal-content .close-btn {
+            color: #dc3545;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: 1px solid #dc3545
+        }
+
+        .modal-content .close-btn:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* === Dark Mode Enhancements === */
+        .dark body {
+            background-color: #111827 !important;
+            color: #888ea8;
+        }
+
+
+        .dark .border-t {
+            border-color: #4b5563;
+        }
+
+        .dark .bg-white {
+            background-color: #111827 !important;
+        }
+
+        .dark .border {
+            border-color: #374151 !important;
+        }
+
+        .dark .form-group input,
+        .dark .form-group select,
+        .dark .form-group textarea,
+        .dark input,
+        .dark select,
+        .dark textarea {
+            background-color: #121e32;
+            border-color: #4b5563;
+            color: #888ea8;
+        }
+
+        .dark input:focus,
+        .dark select:focus,
+        .dark textarea:focus {
+            box-shadow: 0 0 0 1px #818cf8;
+            border-color: #818cf8;
+        }
+
+        .dark .modal-content {
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .dark .modal-content button {
+            background-color: transparent;
+            color: #e5e7eb;
+        }
+
+        .dark .modal-content .gallery-btn {
+            color: #a5b4fc;
+            outline-color: #818cf8;
+        }
+
+        .dark .modal-content .gallery-btn:hover {
+            background-color: #818cf8;
+            color: white;
+        }
+
+        .dark .modal-content #captureBtn {
+            color: #a5b4fc;
+            outline-color: #818cf8;
+        }
+
+        .dark .modal-content #captureBtn:hover {
+            background-color: #818cf8;
+            color: white;
+        }
+
+        .dark .modal-content .camera-btn {
+            color: #86efac;
+            outline-color: #22c55e;
+        }
+
+        .dark .modal-content .camera-btn:hover {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .dark .modal-content .close-btn {
+            color: #f87171;
+            outline-color: #ef4444;
+        }
+
+        .dark .modal-content .close-btn:hover {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .dark .error {
+            color: #f87171;
+        }
+
+        .dark .shadow-md {
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar in dark mode */
+        .dark .form-scroll::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+        }
+
+        .dark .form-scroll::-webkit-scrollbar-track {
+            background-color: #1e293b;
+        }
+
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+
+        #personname-suggestions {
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+        }
+
+        #personname-suggestions .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #personname-suggestions .suggestion-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .photo-preview:hover {
+            transform: scale(4.5);
+            /* Enlarge the image by 1.5x */
+            z-index: 10;
+            /* Ensure the image appears above other elements */
+        }
+
+        .photo-preview:hover {
+            transform: scale(4.5);
+            /* Enlarge the image by 1.5x */
+            z-index: 10;
+            /* Ensure the image appears above other elements */
+        }
+
+
+        /* Style the image preview */
+        .photo-preview {
+            height: 34px;
+            /* Match the button height */
+            width: auto;
+            /* Maintain aspect ratio */
+            object-fit: cover;
+            /* Ensure the image fits nicely */
+            display: none;
+            /* Hidden by default */
+            transition: transform 0.3s ease;
+            /* Smooth transition for zoom effect */
+            margin-left: 8px;
+        }
+
+        /* Show the image preview when a file is selected */
+        .photo-preview[src]:not([src=""]) {
+            display: inline-block;
+            /* Show the image when it has a valid src */
+        }
+
+        /* Zoom-out effect on hover */
+        .photo-preview:hover {
+            transform: scale(4.5);
+            /* Enlarge the image by 1.5x */
+            z-index: 10;
+            /* Ensure the image appears above other elements */
+        }
