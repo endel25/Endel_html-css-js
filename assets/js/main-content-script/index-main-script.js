@@ -47,28 +47,51 @@ function getPermissions() {
 let approvedVisitors = [];
 let disapprovedVisitors = [];
 let exitVisitors = [];
+let allVisitors = [];
 let passTypes = { spot: 0, preapproval: 0 };
 
 async function fetchApprovedVisitors() {
     try {
         console.log('Fetching approved visitors...');
-        const response = await fetch(`https://192.168.1.82:3001/master-records?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!appointmentResponse.ok) {
+            throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        approvedVisitors = data
-            .filter(visitor => visitor.isApproved === true)
-            .map(visitor => ({
-                ...visitor,
-                date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-                durationunit: visitor.durationunit || visitor.durationUnit || ''
-            }));
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        approvedVisitors = [
+            ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                .filter(visitor => visitor.isApproved === true)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'preapproval',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                })),
+            ...(Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                .filter(visitor => visitor.isApproved === true)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'spot',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                }))
+        ];
 
         localStorage.setItem('approvedVisitors', JSON.stringify(approvedVisitors));
         updateApprovedCard();
@@ -83,23 +106,45 @@ async function fetchApprovedVisitors() {
 async function fetchDisapprovedVisitors() {
     try {
         console.log('Fetching disapproved visitors...');
-        const response = await fetch(`https://192.168.1.82:3001/master-records?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!appointmentResponse.ok) {
+            throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        disapprovedVisitors = data
-            .filter(visitor => visitor.isApproved === false)
-            .map(visitor => ({
-                ...visitor,
-                date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-                durationunit: visitor.durationunit || visitor.durationUnit || ''
-            }));
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        disapprovedVisitors = [
+            ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                .filter(visitor => visitor.isApproved === false)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'preapproval',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                })),
+            ...(Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                .filter(visitor => visitor.isApproved === false)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'spot',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                }))
+        ];
 
         localStorage.setItem('disapprovedVisitors', JSON.stringify(disapprovedVisitors));
         updateDisapprovedCard();
@@ -114,23 +159,45 @@ async function fetchDisapprovedVisitors() {
 async function fetchExitVisitors() {
     try {
         console.log('Fetching exit visitors...');
-        const response = await fetch(`https://192.168.1.82:3001/master-records?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!appointmentResponse.ok) {
+            throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        exitVisitors = data
-            .filter(visitor => visitor.exit === true)
-            .map(visitor => ({
-                ...visitor,
-                date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-                durationunit: visitor.durationunit || visitor.durationUnit || ''
-            }));
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        exitVisitors = [
+            ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                .filter(visitor => visitor.exit === true)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'preapproval',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                })),
+            ...(Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                .filter(visitor => visitor.exit === true)
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'spot',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                }))
+        ];
 
         localStorage.setItem('exitVisitors', JSON.stringify(exitVisitors));
         updateExitCard();
@@ -142,23 +209,94 @@ async function fetchExitVisitors() {
     }
 }
 
+async function fetchVisitors() {
+    try {
+        console.log('Fetching all visitors...');
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
+
+        if (!appointmentResponse.ok) {
+            throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
+        }
+
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        allVisitors = [
+            ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'preapproval',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                })),
+            ...(Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                .map(visitor => ({
+                    ...visitor,
+                    recordType: 'spot',
+                    date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
+                    durationunit: visitor.durationunit || visitor.durationUnit || ''
+                }))
+        ];
+
+        if (allVisitors.length === 0) {
+            console.warn('No visitors fetched from the server');
+        }
+
+        localStorage.setItem('allVisitors', JSON.stringify(allVisitors));
+        updateCard();
+    } catch (error) {
+        console.error('Failed to fetch visitors:', error.message);
+        allVisitors = JSON.parse(localStorage.getItem('allVisitors') || '[]');
+        if (allVisitors.length === 0) {
+            console.warn('No cached visitors available either');
+        }
+        updateCard();
+    }
+}
+
 async function fetchPassTypes() {
     try {
         console.log('Fetching pass types...');
-        const response = await fetch(`https://192.168.1.82:3001/master-records?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!appointmentResponse.ok) {
+            throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        passTypes = data.reduce((acc, record) => {
-            acc[record.recordType] = (acc[record.recordType] || 0) + 1;
-            return acc;
-        }, { spot: 0, preapproval: 0 });
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        const appointmentArray = Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [];
+        const visitorArray = Array.isArray(visitorData) ? visitorData : visitorData.data || [];
+
+        passTypes = {
+            spot: visitorArray.length,
+            preapproval: appointmentArray.length
+        };
     } catch (error) {
         console.error('Failed to fetch pass types:', error.message);
         passTypes = { spot: 0, preapproval: 0 };
@@ -177,7 +315,14 @@ function updateApprovedCard() {
         return visitorDate >= oneWeekAgo && visitorDate <= today;
     }).length;
 
-    document.getElementById('approvedLastWeekCount').textContent = lastWeekCount;
+    const approvedCard = document.getElementById('approvedCard');
+    if (approvedCard) {
+        approvedCard.querySelector('.text-sm')?.remove();
+        const changeElement = document.createElement('div');
+        changeElement.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+        changeElement.textContent = `Last week: ${lastWeekCount}`;
+        approvedCard.appendChild(changeElement);
+    }
 }
 
 function updateDisapprovedCard() {
@@ -192,12 +337,18 @@ function updateDisapprovedCard() {
         return visitorDate >= oneWeekAgo && visitorDate <= today;
     }).length;
 
-    document.getElementById('disapprovedLastWeekCount').textContent = lastWeekCount;
+    const disapprovedCard = document.getElementById('disapprovedCard');
+    if (disapprovedCard) {
+        disapprovedCard.querySelector('.text-sm')?.remove();
+        const changeElement = document.createElement('div');
+        changeElement.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+        changeElement.textContent = `Last week: ${lastWeekCount}`;
+        disapprovedCard.appendChild(changeElement);
+    }
 }
 
 function updateExitCard() {
-    const exitCount = exitVisitors.length;
-    document.getElementById('exitCount').textContent = exitCount;
+    document.getElementById('exitCount').textContent = exitVisitors.length;
 
     const today = new Date();
     const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -208,62 +359,40 @@ function updateExitCard() {
         return visitorDate >= oneWeekAgo && visitorDate <= today;
     }).length;
 
-    document.getElementById('exitLastWeekCount').textContent = lastWeekCount;
-}
-
-let visitors = [];
-
-async function fetchVisitors() {
-    try {
-        console.log('Fetching all visitors from https://192.168.1.82:3001/master-records');
-        const response = await fetch(`https://192.168.1.82:3001/master-records?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Fetched visitors:', data);
-        visitors = data.map(visitor => ({
-            ...visitor,
-            date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-            durationunit: visitor.durationunit || visitor.durationUnit || ''
-        }));
-
-        if (visitors.length === 0) {
-            console.warn('No visitors fetched from the server');
-        }
-
-        localStorage.setItem('allVisitors', JSON.stringify(visitors));
-        updateCard();
-    } catch (error) {
-        console.error('Failed to fetch visitors:', error.message);
-        visitors = JSON.parse(localStorage.getItem('allVisitors') || '[]');
-        if (visitors.length === 0) {
-            console.warn('No cached visitors available either');
-        }
-        updateCard();
+    const exitCard = document.getElementById('exitCard');
+    if (exitCard) {
+        exitCard.querySelector('.text-sm')?.remove();
+        const changeElement = document.createElement('div');
+        changeElement.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+        changeElement.textContent = `Last week: ${lastWeekCount}`;
+        exitCard.appendChild(changeElement);
     }
 }
 
 function updateCard() {
-    const totalVisitorsCount = visitors.length;
+    const totalVisitorsCount = allVisitors.length;
     document.getElementById('totalVisitorsCount').textContent = totalVisitorsCount;
 
     const today = new Date();
     const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const lastWeekCount = visitors.filter(visitor => {
+    const lastWeekCount = allVisitors.filter(visitor => {
         if (!visitor.date) return false;
         const [day, month, year] = visitor.date.split('-').map(Number);
         const visitorDate = new Date(year, month - 1, day);
         return visitorDate >= oneWeekAgo && visitorDate <= today;
     }).length;
-    document.getElementById('lastWeekCount').textContent = lastWeekCount;
+
+    const totalVisitorsCard = document.getElementById('totalVisitorsCard');
+    if (totalVisitorsCard) {
+        totalVisitorsCard.querySelector('.text-sm')?.remove();
+        const changeElement = document.createElement('div');
+        changeElement.className = 'text-sm font-medium text-gray-500 dark:text-gray-400';
+        changeElement.textContent = `Last week: ${lastWeekCount}`;
+        totalVisitorsCard.appendChild(changeElement);
+    }
 }
 
+// Alpine.js data components
 document.addEventListener('alpine:init', () => {
     // Upcoming Appointments
     Alpine.data('upcomingAppointments', () => ({
@@ -281,84 +410,13 @@ document.addEventListener('alpine:init', () => {
         },
 
         async fetchUpcomingAppointments() {
-    try {
-        const response = await fetch('https://192.168.1.82:3001/master-records');
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        const normalizeData = (item) => {
-            let hostName = 'Unknown';
-            let department = 'N/A';
-            let designation = 'N/A';
-
-            if (item.personname) {
-                const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
-                if (match) {
-                    hostName = match[1].trim();
-                    department = match[2].trim();
-                    designation = match[3].trim();
-                } else {
-                    hostName = item.personname;
-                }
-            }
-
-            return {
-                id: item.id,
-                firstName: item.firstname || 'Unknown',
-                lastName: item.lastname || 'Unknown',
-                date: item.date || 'N/A',
-                allocatedTime: item.time || 'N/A',
-                host: hostName,
-                department,
-                designation,
-                purpose: item.visit || 'N/A',
-                nationalId: item.nationalid || 'N/A',
-                typeOfPass: item.recordType || 'N/A'
-            };
-        };
-
-        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-        const processedData = Array.isArray(data) ? data : data.data || [];
-        const apiData = processedData
-            .filter(item => item.date && item.date >= today)
-            .map(normalizeData);
-
-        this.appointmentsList = apiData;
-        console.log('Mapped Upcoming Appointments List:', JSON.stringify(this.appointmentsList, null, 2));
-    } catch (error) {
-        console.error('Error fetching upcoming appointments:', error);
-        this.showMessage('Failed to load upcoming appointments.', 'error');
-    }
-}
-    }));
-
-    // Today's Visitors
-    Alpine.data('todaysVisitors', () => ({
-        visitorsList: [],
-        searchQuery: '',
-
-        get filteredVisitors() {
-            if (!this.searchQuery) return this.visitorsList;
-            const query = this.searchQuery.toLowerCase();
-            return this.visitorsList.filter(item =>
-                Object.values(item).some(val =>
-                    val?.toString().toLowerCase().includes(query)
-                )
-            );
-        },
-
-        async fetchTodaysVisitors() {
             try {
-                const response = await fetch('https://192.168.1.82:3001/master-records');
+                const response = await fetch('https://192.168.1.82:3001/appointment');
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                const today = new Date().toISOString().split('T')[0];
 
                 const normalizeData = (item) => {
                     let hostName = 'Unknown';
@@ -380,23 +438,106 @@ document.addEventListener('alpine:init', () => {
                         id: item.id,
                         firstName: item.firstname || 'Unknown',
                         lastName: item.lastname || 'Unknown',
-                        date: item.date || 'N/A',
+                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
                         allocatedTime: item.time || 'N/A',
                         host: hostName,
                         department,
                         designation,
                         purpose: item.visit || 'N/A',
                         nationalId: item.nationalid || 'N/A',
-                        pendingApproval: item.isApproved ?? true
+                        typeOfPass: 'preapproval'
                     };
                 };
 
+                const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
                 const processedData = Array.isArray(data) ? data : data.data || [];
                 const apiData = processedData
-                    .filter(item => item.date === today)
+                    .filter(item => item.date && item.date >= today)
                     .map(normalizeData);
 
-                this.visitorsList = apiData;
+                this.appointmentsList = apiData;
+                console.log('Mapped Upcoming Appointments List:', JSON.stringify(this.appointmentsList, null, 2));
+            } catch (error) {
+                console.error('Error fetching upcoming appointments:', error);
+                this.showMessage('Failed to load upcoming appointments.', 'error');
+            }
+        }
+    }));
+
+    // Today's Visitors
+    Alpine.data('todaysVisitors', () => ({
+        visitorsList: [],
+        searchQuery: '',
+
+        get filteredVisitors() {
+            if (!this.searchQuery) return this.visitorsList;
+            const query = this.searchQuery.toLowerCase();
+            return this.visitorsList.filter(item =>
+                Object.values(item).some(val =>
+                    val?.toString().toLowerCase().includes(query)
+                )
+            );
+        },
+
+        async fetchTodaysVisitors() {
+            try {
+                const [appointmentResponse, visitorResponse] = await Promise.all([
+                    fetch('https://192.168.1.82:3001/appointment'),
+                    fetch('https://192.168.1.82:3001/visitors')
+                ]);
+
+                if (!appointmentResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+                }
+                if (!visitorResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
+                }
+
+                const appointmentData = await appointmentResponse.json();
+                const visitorData = await visitorResponse.json();
+                const today = new Date().toISOString().split('T')[0];
+
+                const normalizeData = (item, recordType) => {
+                    let hostName = 'Unknown';
+                    let department = 'N/A';
+                    let designation = 'N/A';
+
+                    if (item.personname) {
+                        const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
+                        if (match) {
+                            hostName = match[1].trim();
+                            department = match[2].trim();
+                            designation = match[3].trim();
+                        } else {
+                            hostName = item.personname;
+                        }
+                    }
+
+                    return {
+                        id: item.id,
+                        firstName: item.firstname || 'Unknown',
+                        lastName: item.lastname || 'Unknown',
+                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
+                        allocatedTime: item.time || 'N/A',
+                        host: hostName,
+                        department,
+                        designation,
+                        purpose: item.visit || 'N/A',
+                        nationalId: item.nationalid || 'N/A',
+                        pendingApproval: item.isApproved ?? true,
+                        recordType
+                    };
+                };
+
+                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                    .filter(item => item.date === today)
+                    .map(item => normalizeData(item, 'preapproval'));
+
+                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                    .filter(item => item.date === today)
+                    .map(item => normalizeData(item, 'spot'));
+
+                this.visitorsList = [...processedAppointmentData, ...processedVisitorData];
                 console.log('Mapped Today\'s Visitor List:', JSON.stringify(this.visitorsList, null, 2));
             } catch (error) {
                 console.error("Error fetching today's visitors:", error);
@@ -404,10 +545,11 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async toggleApproval(id, currentStatus) {
+        async toggleApproval(id, currentStatus, recordType) {
             try {
                 const status = currentStatus ? 'disapprove' : 'approve';
-                const response = await fetch(`https://192.168.1.82:3001/master-records/${id}/status/${status}`, {
+                const endpoint = recordType === 'preapproval' ? 'appointment' : 'visitors';
+                const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${id}/status/${status}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -461,93 +603,109 @@ document.addEventListener('alpine:init', () => {
         },
 
         async fetchVisitorDetails() {
-    try {
-        const response = await fetch('https://192.168.1.82:3001/master-records');
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+            try {
+                const [appointmentResponse, visitorResponse] = await Promise.all([
+                    fetch('https://192.168.1.82:3001/appointment'),
+                    fetch('https://192.168.1.82:3001/visitors')
+                ]);
 
-        const data = await response.json();
-        console.log('API Response for Visitor Details:', JSON.stringify(data, null, 2));
-
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-        console.log('Today\'s date:', todayStr);
-
-        const normalizeData = (item) => {
-            let hostName = 'Unknown';
-            let department = 'N/A';
-            let designation = 'N/A';
-
-            if (item.personname) {
-                const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
-                if (match) {
-                    hostName = match[1].trim();
-                    department = match[2].trim();
-                    designation = match[3].trim();
-                } else {
-                    hostName = item.personname;
+                if (!appointmentResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
                 }
-            }
-
-            let exitDateToUse = item.exitDate || localStorage.getItem(`exitDate_${item.id}`) || item.date;
-            if (exitDateToUse?.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const [year, month, day] = exitDateToUse.split('-').map(Number);
-                exitDateToUse = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
-            }
-
-            if (!exitDateToUse?.match(/^\d{2}-\d{2}-\d{4}$/)) {
-                console.warn(`Invalid exitDate format for visitor ID ${item.id}. Fallback used.`);
-                exitDateToUse = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
-            }
-
-            return {
-                id: item.id,
-                firstName: item.firstname || 'Unknown',
-                lastName: item.lastname || 'Unknown',
-                date: item.date || 'N/A',
-                allocatedTime: item.time || 'N/A',
-                host: hostName,
-                department,
-                designation,
-                purpose: item.visit || 'N/A',
-                nationalId: item.nationalid || 'N/A',
-                pendingApproval: true,
-                inCampus: (item.isApproved ?? true) ? true : (item.inprogress ?? false),
-                complete: item.complete ?? false,
-                exitApproval: item.exit ?? false,
-                exitDate: exitDateToUse,
-                isApproved: item.isApproved ?? true,
-                typeOfPass: item.recordType || 'N/A'
-            };
-        };
-
-        const processedData = Array.isArray(data) ? data : data.data || [];
-        const apiData = processedData
-            .filter(item => item.date && item.date === todayStr) // Filter for today only
-            .map(normalizeData)
-            .filter(item => {
-                if (item.exitApproval && item.exitDate) {
-                    const [exitDay, exitMonth, exitYear] = item.exitDate.split('-').map(Number);
-                    const exitDate = new Date(Date.UTC(exitYear, exitMonth - 1, exitDay));
-                    const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-                    return exitDate >= todayDate;
+                if (!visitorResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
                 }
-                return true;
-            });
 
-        this.visitorsList = apiData;
-        console.log('Mapped Visitor List:', JSON.stringify(this.visitorsList, null, 2));
-    } catch (error) {
-        console.error('Error fetching visitor details:', error);
-        this.showMessage('Failed to load visitor details.', 'error');
-    }
-},
+                const appointmentData = await appointmentResponse.json();
+                const visitorData = await visitorResponse.json();
+                console.log('API Response for Visitor Details:', JSON.stringify({ appointmentData, visitorData }, null, 2));
+
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                console.log('Today\'s date:', todayStr);
+
+                const normalizeData = (item, recordType) => {
+                    let hostName = 'Unknown';
+                    let department = 'N/A';
+                    let designation = 'N/A';
+
+                    if (item.personname) {
+                        const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
+                        if (match) {
+                            hostName = match[1].trim();
+                            department = match[2].trim();
+                            designation = match[3].trim();
+                        } else {
+                            hostName = item.personname;
+                        }
+                    }
+
+                    let exitDateToUse = item.exitDate || localStorage.getItem(`exitDate_${item.id}`) || item.date;
+                    if (exitDateToUse?.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        const [year, month, day] = exitDateToUse.split('-').map(Number);
+                        exitDateToUse = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
+                    }
+
+                    if (!exitDateToUse?.match(/^\d{2}-\d{2}-\d{4}$/)) {
+                        console.warn(`Invalid exitDate format for visitor ID ${item.id}. Fallback used.`);
+                        exitDateToUse = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+                    }
+
+                    return {
+                        id: item.id,
+                        firstName: item.firstname || 'Unknown',
+                        lastName: item.lastname || 'Unknown',
+                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
+                        allocatedTime: item.time || 'N/A',
+                        host: hostName,
+                        department,
+                        designation,
+                        purpose: item.visit || 'N/A',
+                        nationalId: item.nationalid || 'N/A',
+                        pendingApproval: true,
+                        inCampus: (item.isApproved ?? true) ? true : (item.inprogress ?? false),
+                        complete: item.complete ?? false,
+                        exitApproval: item.exit ?? false,
+                        exitDate: exitDateToUse,
+                        isApproved: item.isApproved ?? true,
+                        typeOfPass: recordType,
+                        recordType
+                    };
+                };
+
+                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                    .filter(item => item.date && item.date === todayStr)
+                    .map(item => normalizeData(item, 'preapproval'));
+
+                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                    .filter(item => item.date && item.date === todayStr)
+                    .map(item => normalizeData(item, 'spot'));
+
+                const apiData = [...processedAppointmentData, ...processedVisitorData]
+                    .filter(item => {
+                        if (item.exitApproval && item.exitDate) {
+                            const [exitDay, exitMonth, exitYear] = item.exitDate.split('-').map(Number);
+                            const exitDate = new Date(Date.UTC(exitYear, exitMonth - 1, exitDay));
+                            const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+                            return exitDate >= todayDate;
+                        }
+                        return true;
+                    });
+
+                this.visitorsList = apiData;
+                console.log('Mapped Visitor List:', JSON.stringify(this.visitorsList, null, 2));
+            } catch (error) {
+                console.error('Error fetching visitor details:', error);
+                this.showMessage('Failed to load visitor details.', 'error');
+            }
+        },
 
         async updateVisitor(visitor) {
             try {
                 let status = '';
                 let body = {};
+                const endpoint = visitor.recordType === 'preapproval' ? 'appointment' : 'visitors';
+
                 if (visitor.inCampus) {
                     status = 'inprogress';
                     body = { inprogress: true };
@@ -566,7 +724,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 if (status) {
-                    const response = await fetch(`https://192.168.1.82:3001/master-records/${visitor.id}/status/${status}`, {
+                    const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${visitor.id}/status/${status}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
@@ -830,7 +988,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Visitor Status',
                     data: [
-                        visitors.length,
+                        allVisitors.length,
                         approvedVisitors.length,
                         disapprovedVisitors.length,
                         exitVisitors.length
