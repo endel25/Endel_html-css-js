@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return error;
     };
 
-    // Function to populate dropdown
     function populateDropdown(selectId, data, valueKey = 'name') {
         const select = document.getElementById(selectId);
         if (!select) {
@@ -119,17 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchGender() {
         try {
-            const response = await fetch('https://192.168.1.82:3001/gender');
+            const response = await fetch('https://192.168.1.57:3001/gender');
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const genders = await response.json(); // Parse JSON response
+            const genders = await response.json();
             if (!Array.isArray(genders)) {
                 throw new Error('API response is not an array');
             }
             populateDropdown('gender', genders);
-
-            const genderSelect = document.getElementById('gender');
         } catch (error) {
             console.error('Error fetching purpose of genders:', error);
             alert('Failed to load purpose of gender: ' + error.message);
@@ -148,40 +145,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-async function checkContactNumber(contactnumber) {
-    if (!contactnumber || !/^\d+$/.test(contactnumber)) {
-        form.reset();
-        clearErrors();
-        errorMessage.classList.add('hidden');
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://192.168.1.82:3001/master-records/by-contact?contactnumber=${encodeURIComponent(contactnumber)}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.ok) {
-            const masterRecord = await response.json();
-            if (masterRecord) {
-                console.log('Master record data fetched for contactnumber:', masterRecord);
-                populateForm(masterRecord);
-                showMessage('Master record data loaded', 'success');
-            } else {
-                console.log('No master record found for contactnumber:', contactnumber);
-                form.reset();
-                document.getElementById('contactnumber').value = contactnumber;
-                showMessage('No existing record found for this contact number', 'info');
-            }
-        } else {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+    async function checkContactNumber(contactnumber) {
+        if (!contactnumber || !/^\d+$/.test(contactnumber)) {
+            form.reset();
+            clearErrors();
+            errorMessage.classList.add('hidden');
+            return;
         }
-    } catch (error) {
-        console.error('Error checking contactnumber:', error.message);
-        showMessage(`Failed to fetch master record: ${error.message}`, 'error');
+
+        try {
+            const response = await fetch(`https://192.168.1.57:3001/master-records/by-contact?contactnumber=${encodeURIComponent(contactnumber)}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (response.ok) {
+                const masterRecord = await response.json();
+                if (masterRecord) {
+                    console.log('Master record data fetched for contactnumber:', masterRecord);
+                    populateForm(masterRecord);
+                    showMessage('Master record data loaded', 'success');
+                } else {
+                    console.log('No master record found for contactnumber:', contactnumber);
+                    form.reset();
+                    document.getElementById('contactnumber').value = contactnumber;
+                    showMessage('No existing record found for this contact number', 'info');
+                }
+            } else {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error checking contactnumber:', error.message);
+            showMessage(`Failed to fetch master record: ${error.message}`, 'error');
+        }
     }
-}
 
     const attachLiveValidation = () => {
         document.querySelectorAll("input, select").forEach(input => {
@@ -205,7 +202,7 @@ async function checkContactNumber(contactnumber) {
         }, 500));
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
         if (loading) return;
 
@@ -251,28 +248,26 @@ async function checkContactNumber(contactnumber) {
 
         console.log('📤 Final form data:', Object.fromEntries(formData));
 
-        try {
-            const response = await fetch('https://192.168.1.82:3001/appointment/create', {
-                method: 'POST',
-                body: formData,
+        // Initiate the POST request and redirect immediately
+        fetch('https://192.168.1.57:3001/appointment/create', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.ok) {
+                    console.error('Failed to create appointment:', result.message);
+                } else {
+                    console.log('Appointment created successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating appointment:', error.message);
             });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Failed to create appointment.');
-            }
-
-            localStorage.setItem('appointmentSuccessMessage', 'Appointment created successfully!');
-            window.location.href = 'PreApprovalEntry.html';
-            form.reset();
-        } catch (error) {
-            errorMessage.textContent = error.message;
-            errorMessage.classList.remove('hidden');
-        } finally {
-            loading = false;
-            submitBtn.textContent = 'Create';
-            submitBtn.disabled = false;
-        }
+        // Store success message and redirect immediately
+        localStorage.setItem('appointmentSuccessMessage', 'Appointment created successfully!');
+        window.location.href = 'PreApprovalEntry.html';
+        form.reset();
     });
 });

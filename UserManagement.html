@@ -221,7 +221,7 @@
                                                 <span class="error-message"
                                                     id="error-userRoleId"></span>
                                                 <script>
-                                                fetch('https://192.168.1.82:3001/userroles/active')
+                                                fetch('https://192.168.1.57:3001/userroles/active')
                                                     .then(response => response.json())
                                                     .then(data => {
                                                         const select = document.getElementById('UserRoleId');
@@ -261,7 +261,7 @@
                                                     id="error-department"></span>
                                                 <script>
                                                 (async () => {
-                                                    const API_URL = 'https://192.168.1.82:3001/department';
+                                                    const API_URL = 'https://192.168.1.57:3001/department';
                                                     try {
                                                         console.log('Attempting to fetch departments from ' + API_URL);
                                                         const controller = new AbortController();
@@ -354,7 +354,7 @@
                                                     id="error-designation"></span>
                                                 <script>
                                                 (async () => {
-                                                    const API_URL = 'https://192.168.1.82:3001/designation';
+                                                    const API_URL = 'https://192.168.1.57:3001/designation';
                                                     try {
                                                         console.log('Attempting to fetch designations from ' + API_URL);
                                                         const controller = new AbortController();
@@ -586,7 +586,7 @@
                                                 <span class="error-message"
                                                     id="error-edituserRoleId"></span>
                                                 <script>
-                                                fetch('https://192.168.1.82:3001/userroles/active')
+                                                fetch('https://192.168.1.57:3001/userroles/active')
                                                     .then(response => response.json())
                                                     .then(data => {
                                                         const select = document.getElementById('editUserRoleId');
@@ -628,7 +628,7 @@
                                                     id="error-editdepartment"></span>
                                                 <script>
                                                 (async () => {
-                                                    const API_URL = 'https://192.168.1.82:3001/department';
+                                                    const API_URL = 'https://192.168.1.57:3001/department';
                                                     try {
                                                         console.log('Attempting to fetch departments from ' + API_URL);
                                                         const controller = new AbortController();
@@ -721,7 +721,7 @@
                                                     id="error-editdesignation"></span>
                                                 <script>
                                                 (async () => {
-                                                    const API_URL = 'https://192.168.1.82:3001/designation';
+                                                    const API_URL = 'https://192.168.1.57:3001/designation';
                                                     try {
                                                         console.log('Attempting to fetch designations from ' + API_URL);
                                                         const controller = new AbortController();

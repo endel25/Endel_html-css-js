@@ -130,8 +130,7 @@
                                     <table class="table-hover whitespace-nowrap w-full">
                                         <thead>
                                             <tr>
-                                                <th>First Name</th>
-                                                <th>Last Name</th>
+                                                <th>Full Name</th>
                                                 <th>Date</th>
                                                 <th>Visit Time</th>
                                                 <th>Type Of Passes</th>
@@ -149,8 +148,7 @@
                                             <!-- Render filtered list -->
                                             <template x-for="appointment in filteredAppointments" :key="appointment.id">
                                                 <tr>
-                                                    <td x-text="appointment.firstName"></td>
-                                                    <td x-text="appointment.lastName"></td>
+                                                    <td x-text="`${appointment.firstName} ${appointment.lastName}`"></td>
                                                     <td x-text="appointment.date"></td>
                                                     <td x-text="appointment.allocatedTime"></td>
                                                     <td x-text="appointment.typeOfPass"></td>
@@ -181,9 +179,9 @@
                                     <table class="table-hover whitespace-nowrap w-full">
                                         <thead>
                                             <tr>
-                                                <th>First Name</th>
-                                                <th>Last Name</th>
+                                                <th>Full Name</th>
                                                 <th>Visit Time</th>
+                                                <th>Type Of Passes</th>
                                                 <th>Host</th>
                                             </tr>
                                         </thead>
@@ -198,9 +196,9 @@
                                             <!-- Loop through filtered list -->
                                             <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
                                                 <tr>
-                                                    <td x-text="visitor.firstName"></td>
-                                                    <td x-text="visitor.lastName"></td>
+                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
                                                     <td x-text="visitor.allocatedTime"></td>
+                                                    <td x-text="visitor.typeOfPass"></td>
                                                     <td>
                                                         <span class="host-name" x-text="visitor.host"
                                                             :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
@@ -248,9 +246,9 @@
                                     <table class="table-hover whitespace-nowrap w-full">
                                         <thead>
                                             <tr>
-                                                <th>First Name</th>
-                                                <th>Last Name</th>
+                                                <th>Full Name</th>
                                                 <th>Visit Time</th>
+                                                <th>Contact Number</th>
                                                 <th>Type Of Passes</th>
                                                 <th>Host</th>
                                                 <th>Purpose</th>
@@ -272,9 +270,9 @@
                                             <!-- Filtered Rows -->
                                             <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
                                                 <tr>
-                                                    <td x-text="visitor.firstName"></td>
-                                                    <td x-text="visitor.lastName"></td>
+                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
                                                     <td x-text="visitor.allocatedTime"></td>
+                                                    <td x-text="visitor.contactnumber"></td>
                                                     <td x-text="visitor.typeOfPass"></td>
                                                     <td>
                                                         <span class="host-name" x-text="visitor.host"

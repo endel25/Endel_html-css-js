@@ -18,8 +18,8 @@ function updateSearchQuery(value) {
 
 async function fetchVisitors() {
     try {
-        console.log('Fetching disapproved visitors from https://192.168.1.82:3001/visitors');
-        const response = await fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+        console.log('Fetching disapproved visitors from https://192.168.1.57:3001/visitors');
+        const response = await fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
