@@ -584,6 +584,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('visitorDetails', () => ({
         visitorsList: [],
         searchQuery: '',
+        selectedDate: new Date().toISOString().split('T')[0], // Default to today
 
         get filteredVisitors() {
             if (!this.searchQuery) return this.visitorsList;
@@ -606,8 +607,14 @@ document.addEventListener('alpine:init', () => {
         async fetchVisitorDetails() {
             try {
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch('https://192.168.3.73:3001/appointment'),
-                    fetch('https://192.168.3.73:3001/visitors')
+                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
                 ]);
 
                 if (!appointmentResponse.ok) {
@@ -621,9 +628,9 @@ document.addEventListener('alpine:init', () => {
                 const visitorData = await visitorResponse.json();
                 console.log('API Response for Visitor Details:', JSON.stringify({ appointmentData, visitorData }, null, 2));
 
-                const today = new Date();
-                const todayStr = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-                console.log('Today\'s date:', todayStr);
+                // Normalize selected date to YYYY-MM-DD for comparison
+                const selectedDateStr = this.selectedDate; // Already in YYYY-MM-DD from input
+                console.log('Selected date:', selectedDateStr);
 
                 const normalizeData = (item, recordType) => {
                     let hostName = 'Unknown';
@@ -649,6 +656,7 @@ document.addEventListener('alpine:init', () => {
 
                     if (!exitDateToUse?.match(/^\d{2}-\d{2}-\d{4}$/)) {
                         console.warn(`Invalid exitDate format for visitor ID ${item.id}. Fallback used.`);
+                        const today = new Date();
                         exitDateToUse = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
                     }
 
@@ -676,11 +684,11 @@ document.addEventListener('alpine:init', () => {
                 };
 
                 const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
-                    .filter(item => item.date && item.date === todayStr)
+                    .filter(item => item.date && item.date === selectedDateStr)
                     .map(item => normalizeData(item, 'preapproval'));
 
                 const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
-                    .filter(item => item.date && item.date === todayStr)
+                    .filter(item => item.date && item.date === selectedDateStr)
                     .map(item => normalizeData(item, 'spot'));
 
                 const apiData = [...processedAppointmentData, ...processedVisitorData]
@@ -688,8 +696,12 @@ document.addEventListener('alpine:init', () => {
                         if (item.exitApproval && item.exitDate) {
                             const [exitDay, exitMonth, exitYear] = item.exitDate.split('-').map(Number);
                             const exitDate = new Date(Date.UTC(exitYear, exitMonth - 1, exitDay));
-                            const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-                            return exitDate >= todayDate;
+                            const selectedDate = new Date(Date.UTC(
+                                parseInt(selectedDateStr.split('-')[0]),
+                                parseInt(selectedDateStr.split('-')[1]) - 1,
+                                parseInt(selectedDateStr.split('-')[2])
+                            ));
+                            return exitDate >= selectedDate;
                         }
                         return true;
                     });

@@ -231,67 +231,74 @@
                     </div>
 
                     <div class="mb-5 grid grid-cols-1">
-                        <!-- ✅ Visitor Details Table Panel with Search -->
-                        <div class="panel3" x-data="visitorDetails" x-init="fetchVisitorDetails()">
-                            <div class="mb-3 flex items-center justify-between">
-                                <h3 class="text-lg font-bold"><b>Today's Visitor Details</b></h3>
+                    <!-- ✅ Visitor Details Table Panel with Search and Date Filter -->
+                    <div class="panel3" x-data="visitorDetails" x-init="fetchVisitorDetails()">
+                        <div class="mb-3 flex items-center justify-between">
+                            <h3 class="text-lg font-bold"><b>Today's Visitor Details</b></h3>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-1">
+                                    <input type="date" id="visitor-date" name="date"
+                                        class="w-full text-xs px-3 py-2 border rounded"
+                                        :value="selectedDate" @change="selectedDate = $event.target.value; fetchVisitorDetails()" />
+                                    <span class="error text-red-500 text-xs" id="error-date"></span>
+                                </div>
                                 <div class="dataTable-search">
                                     <input class="dataTable-input" placeholder="Search..." type="text"
                                         :value="searchQuery" @input="searchQuery = $event.target.value"
                                         autocomplete="off" spellcheck="false" />
                                 </div>
                             </div>
-                            <div class="overflow-x-auto">
-                                <div class="table-container1">
-                                    <table class="table-hover whitespace-nowrap w-full">
-                                        <thead>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <div class="table-container1">
+                                <table class="table-hover whitespace-nowrap w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Full Name</th>
+                                            <th>Visit Time</th>
+                                            <th>Contact Number</th>
+                                            <th>Type Of Passes</th>
+                                            <th>Host</th>
+                                            <th>Purpose</th>
+                                            <th>National ID</th>
+                                            <th>Pending</th>
+                                            <th>InCampus</th>
+                                            <th>Complete</th>
+                                            <th>Exit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- If no matches -->
+                                        <template x-if="filteredVisitors.length === 0">
                                             <tr>
-                                                <th>Full Name</th>
-                                                <th>Visit Time</th>
-                                                <th>Contact Number</th>
-                                                <th>Type Of Passes</th>
-                                                <th>Host</th>
-                                                <th>Purpose</th>
-                                                <th>National ID</th>
-                                                <th>Pending</th>
-                                                <th>InCampus</th>
-                                                <th>Complete</th>
-                                                <th>Exit</th>
+                                                <td colspan="11" class="text-center">No visitors available</td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- If no matches -->
-                                            <template x-if="filteredVisitors.length === 0">
-                                                <tr>
-                                                    <td colspan="11" class="text-center">No visitors available</td>
-                                                </tr>
-                                            </template>
+                                        </template>
 
-                                            <!-- Filtered Rows -->
-                                            <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
-                                                <tr>
-                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
-                                                    <td x-text="visitor.allocatedTime"></td>
-                                                    <td x-text="visitor.contactnumber"></td>
-                                                    <td x-text="visitor.typeOfPass"></td>
-                                                    <td>
-                                                        <span class="host-name" x-text="visitor.host"
-                                                            :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
-                                                    </td>
-                                                    <td x-text="visitor.purpose"></td>
-                                                    <td x-text="visitor.nationalId"></td>
-                                                    <!-- Progress Steps -->
-                                                    <td colspan="4" class="td1">
-                                                        <!-- Use renderProgressSteps to dynamically render the progress steps -->
-                                                        <div x-html="renderProgressSteps(visitor)"></div>
-                                                    </td>
-                                                </tr>
-                                            </template>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        <!-- Filtered Rows -->
+                                        <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
+                                            <tr>
+                                                <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
+                                                <td x-text="visitor.allocatedTime"></td>
+                                                <td x-text="visitor.contactnumber"></td>
+                                                <td x-text="visitor.typeOfPass"></td>
+                                                <td>
+                                                    <span class="host-name" x-text="visitor.host"
+                                                        :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
+                                                </td>
+                                                <td x-text="visitor.purpose"></td>
+                                                <td x-text="visitor.nationalId"></td>
+                                                <!-- Progress Steps -->
+                                                <td colspan="4" class="td1">
+                                                    <div x-html="renderProgressSteps(visitor)"></div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
                 <!-- end main content section -->
