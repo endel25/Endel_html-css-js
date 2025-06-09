@@ -16,7 +16,7 @@ const showMessage = (msg = 'Example notification text.', type = 'success', posit
 };
 
 // Base URL for the backend API
-const API_BASE_URL = 'https://192.168.1.57:3001';
+const API_BASE_URL = 'https://192.168.3.73:3001';
 
 // Function to get Dictionarysettings permissions from localStorage
 function getPermissions() {

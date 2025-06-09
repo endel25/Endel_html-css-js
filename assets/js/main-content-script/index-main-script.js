@@ -54,11 +54,11 @@ async function fetchApprovedVisitors() {
     try {
         console.log('Fetching approved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -107,11 +107,11 @@ async function fetchDisapprovedVisitors() {
     try {
         console.log('Fetching disapproved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -160,11 +160,11 @@ async function fetchExitVisitors() {
     try {
         console.log('Fetching exit visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -213,11 +213,11 @@ async function fetchVisitors() {
     try {
         console.log('Fetching all visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -270,11 +270,11 @@ async function fetchPassTypes() {
     try {
         console.log('Fetching pass types...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -411,7 +411,7 @@ document.addEventListener('alpine:init', () => {
 
         async fetchUpcomingAppointments() {
             try {
-                const response = await fetch('https://192.168.1.57:3001/appointment');
+                const response = await fetch('https://192.168.3.73:3001/appointment');
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -482,8 +482,8 @@ document.addEventListener('alpine:init', () => {
         async fetchTodaysVisitors() {
             try {
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch('https://192.168.1.57:3001/appointment'),
-                    fetch('https://192.168.1.57:3001/visitors')
+                    fetch('https://192.168.3.73:3001/appointment'),
+                    fetch('https://192.168.3.73:3001/visitors')
                 ]);
 
                 if (!appointmentResponse.ok) {
@@ -550,7 +550,7 @@ document.addEventListener('alpine:init', () => {
             try {
                 const status = currentStatus ? 'disapprove' : 'approve';
                 const endpoint = recordType === 'preapproval' ? 'appointment' : 'visitors';
-                const response = await fetch(`https://192.168.1.57:3001/${endpoint}/${id}/status/${status}`, {
+                const response = await fetch(`https://192.168.3.73:3001/${endpoint}/${id}/status/${status}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -606,8 +606,8 @@ document.addEventListener('alpine:init', () => {
         async fetchVisitorDetails() {
             try {
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch('https://192.168.1.57:3001/appointment'),
-                    fetch('https://192.168.1.57:3001/visitors')
+                    fetch('https://192.168.3.73:3001/appointment'),
+                    fetch('https://192.168.3.73:3001/visitors')
                 ]);
 
                 if (!appointmentResponse.ok) {
@@ -726,7 +726,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 if (status) {
-                    const response = await fetch(`https://192.168.1.57:3001/${endpoint}/${visitor.id}/status/${status}`, {
+                    const response = await fetch(`https://192.168.3.73:3001/${endpoint}/${visitor.id}/status/${status}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
