@@ -45,16 +45,40 @@ document.addEventListener('DOMContentLoaded', function () {
             // Wait for table data (if fetched dynamically)
             new Promise(resolve => {
                 const tableBody = document.getElementById('visitorTableBody');
-                if (tableBody && tableBody.children.length > 0 && !tableBody.querySelector('.skeleton-row')) {
+                if (!tableBody) {
+                    resolve(); // Resolve if table doesn't exist
+                    return;
+                }
+
+                // Check if table is already populated
+                if (tableBody.children.length > 0 && !tableBody.querySelector('.skeleton-row')) {
                     resolve();
-                } else {
-                    const tableCheck = setInterval(() => {
-                        if (tableBody.children.length > 0 && !tableBody.querySelector('.skeleton-row')) {
-                            clearInterval(tableCheck);
+                    return;
+                }
+
+                // Use MutationObserver to watch for changes
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList' && 
+                            tableBody.children.length > 0 && 
+                            !tableBody.querySelector('.skeleton-row')) {
+                            observer.disconnect();
                             resolve();
                         }
-                    }, 50);
-                }
+                    });
+                });
+
+                // Start observing
+                observer.observe(tableBody, {
+                    childList: true,
+                    subtree: true
+                });
+
+                // Set a timeout to resolve anyway after 5 seconds
+                setTimeout(() => {
+                    observer.disconnect();
+                    resolve();
+                }, 5000);
             })
         ]);
     }

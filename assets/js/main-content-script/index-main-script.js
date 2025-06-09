@@ -54,11 +54,11 @@ async function fetchApprovedVisitors() {
     try {
         console.log('Fetching approved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -107,11 +107,11 @@ async function fetchDisapprovedVisitors() {
     try {
         console.log('Fetching disapproved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -160,11 +160,11 @@ async function fetchExitVisitors() {
     try {
         console.log('Fetching exit visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -213,11 +213,11 @@ async function fetchVisitors() {
     try {
         console.log('Fetching all visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -270,11 +270,11 @@ async function fetchPassTypes() {
     try {
         console.log('Fetching pass types...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -399,8 +399,14 @@ document.addEventListener('alpine:init', () => {
         appointmentsList: [],
         searchQuery: '',
 
+        init() {
+            this.fetchUpcomingAppointments();
+        },
+
         get filteredAppointments() {
+            if (!this.appointmentsList) return [];
             if (!this.searchQuery) return this.appointmentsList;
+            
             const query = this.searchQuery.toLowerCase();
             return this.appointmentsList.filter(item =>
                 Object.values(item).some(val =>
@@ -411,14 +417,31 @@ document.addEventListener('alpine:init', () => {
 
         async fetchUpcomingAppointments() {
             try {
-                const response = await fetch('https://192.168.3.73:3001/appointment');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                console.log('Fetching upcoming appointments...');
+                const [appointmentResponse, visitorResponse] = await Promise.all([
+                    fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                ]);
+
+                if (!appointmentResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
+                }
+                if (!visitorResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
                 }
 
-                const data = await response.json();
+                const appointmentData = await appointmentResponse.json();
+                const visitorData = await visitorResponse.json();
 
-                const normalizeData = (item) => {
+                const today = new Date().toISOString().split('T')[0];
+
+                const normalizeData = (item, typeOfPass, index) => {
                     let hostName = 'Unknown';
                     let department = 'N/A';
                     let designation = 'N/A';
@@ -435,7 +458,7 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     return {
-                        id: item.id,
+                        id: `${typeOfPass}-${item.id || index}-${Date.now()}`,
                         firstName: item.firstname || 'Unknown',
                         lastName: item.lastname || 'Unknown',
                         date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
@@ -445,21 +468,26 @@ document.addEventListener('alpine:init', () => {
                         designation,
                         purpose: item.visit || 'N/A',
                         nationalId: item.nationalid || 'N/A',
-                        typeOfPass: 'preapproval'
+                        typeOfPass
                     };
                 };
 
-                const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-                const processedData = Array.isArray(data) ? data : data.data || [];
-                const apiData = processedData
+                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                     .filter(item => item.date && item.date >= today)
-                    .map(normalizeData);
+                    .map((item, index) => normalizeData(item, 'preapproval', index));
 
-                this.appointmentsList = apiData;
+                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                    .filter(item => item.date && item.date >= today)
+                    .map((item, index) => normalizeData(item, 'spot', index));
+
+                this.appointmentsList = [...processedAppointmentData, ...processedVisitorData]
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
                 console.log('Mapped Upcoming Appointments List:', JSON.stringify(this.appointmentsList, null, 2));
             } catch (error) {
                 console.error('Error fetching upcoming appointments:', error);
-                this.showMessage('Failed to load upcoming appointments.', 'error');
+                this.appointmentsList = [];
+                this.showMessage('Failed to load upcoming appointments. Please try again later.', 'error');
             }
         }
     }));
@@ -482,8 +510,8 @@ document.addEventListener('alpine:init', () => {
         async fetchTodaysVisitors() {
             try {
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch('https://192.168.3.73:3001/appointment'),
-                    fetch('https://192.168.3.73:3001/visitors')
+                    fetch('https://192.168.1.82:3001/appointment'),
+                    fetch('https://192.168.1.82:3001/visitors')
                 ]);
 
                 if (!appointmentResponse.ok) {
@@ -550,7 +578,7 @@ document.addEventListener('alpine:init', () => {
             try {
                 const status = currentStatus ? 'disapprove' : 'approve';
                 const endpoint = recordType === 'preapproval' ? 'appointment' : 'visitors';
-                const response = await fetch(`https://192.168.3.73:3001/${endpoint}/${id}/status/${status}`, {
+                const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${id}/status/${status}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -585,8 +613,9 @@ document.addEventListener('alpine:init', () => {
         visitorsList: [],
         searchQuery: '',
         selectedDate: new Date().toISOString().split('T')[0], // Default to today
+        timeRange: 'today', // Default to today
 
-        get filteredVisitors() {
+        filteredVisitors() {
             if (!this.searchQuery) return this.visitorsList;
             const query = this.searchQuery.toLowerCase();
             return this.visitorsList.filter(item =>
@@ -607,11 +636,11 @@ document.addEventListener('alpine:init', () => {
         async fetchVisitorDetails() {
             try {
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     }),
-                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
@@ -628,9 +657,55 @@ document.addEventListener('alpine:init', () => {
                 const visitorData = await visitorResponse.json();
                 console.log('API Response for Visitor Details:', JSON.stringify({ appointmentData, visitorData }, null, 2));
 
-                // Normalize selected date to YYYY-MM-DD for comparison
-                const selectedDateStr = this.selectedDate; // Already in YYYY-MM-DD from input
-                console.log('Selected date:', selectedDateStr);
+                // Date filtering logic based on timeRange
+                const today = new Date();
+                let startDate, endDate;
+
+                switch (this.timeRange) {
+                    case 'today':
+                        startDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+                        endDate = startDate;
+                        this.selectedDate = startDate; // Sync date picker
+                        break;
+                    case 'tomorrow':
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(today.getDate() + 1);
+                        startDate = tomorrow.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate; // Sync date picker
+                        break;
+                    case 'previous':
+                        const previous = new Date(today);
+                        previous.setDate(today.getDate() - 1);
+                        startDate = previous.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate; // Sync date picker
+                        break;
+                    case 'month': // This Month
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        startDate = firstDayOfMonth.toISOString().split('T')[0];
+        endDate = lastDayOfMonth.toISOString().split('T')[0];
+        this.selectedDate = startDate; // Sync with date picker
+        break;
+    case 'year': // This Year
+        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+        const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
+        startDate = firstDayOfYear.toISOString().split('T')[0];
+        endDate = lastDayOfYear.toISOString().split('T')[0];
+        this.selectedDate = startDate; // Sync with date picker
+        break;
+                    case 'custom':
+                        startDate = this.selectedDate;
+                        endDate = this.selectedDate;
+                        break;
+                    default:
+                        startDate = today.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate;
+                }
+
+                console.log(`Filtering for time range: ${this.timeRange}, startDate: ${startDate}, endDate: ${endDate}`);
 
                 const normalizeData = (item, recordType) => {
                     let hostName = 'Unknown';
@@ -656,7 +731,6 @@ document.addEventListener('alpine:init', () => {
 
                     if (!exitDateToUse?.match(/^\d{2}-\d{2}-\d{4}$/)) {
                         console.warn(`Invalid exitDate format for visitor ID ${item.id}. Fallback used.`);
-                        const today = new Date();
                         exitDateToUse = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
                     }
 
@@ -683,25 +757,30 @@ document.addEventListener('alpine:init', () => {
                     };
                 };
 
+                const filterByDateRange = (item) => {
+                    if (!item.date) return false;
+                    return item.date >= startDate && item.date <= endDate;
+                };
+
                 const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
-                    .filter(item => item.date && item.date === selectedDateStr)
+                    .filter(filterByDateRange)
                     .map(item => normalizeData(item, 'preapproval'));
 
                 const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
-                    .filter(item => item.date && item.date === selectedDateStr)
+                    .filter(filterByDateRange)
                     .map(item => normalizeData(item, 'spot'));
 
                 const apiData = [...processedAppointmentData, ...processedVisitorData]
                     .filter(item => {
                         if (item.exitApproval && item.exitDate) {
                             const [exitDay, exitMonth, exitYear] = item.exitDate.split('-').map(Number);
-                            const exitDate = new Date(Date.UTC(exitYear, exitMonth - 1, exitDay));
-                            const selectedDate = new Date(Date.UTC(
-                                parseInt(selectedDateStr.split('-')[0]),
-                                parseInt(selectedDateStr.split('-')[1]) - 1,
-                                parseInt(selectedDateStr.split('-')[2])
+                            const exitDate = new Date(Date.UTC(exitYear + 1, exitMonth, exitDay));
+                            const endFilterDate = new Date(Date.UTC(
+                                parseInt(endDate.split('-')[0]),
+                                parseInt(endDate.split('-')[1]) - 1,
+                                parseInt(endDate.split('-')[2])
                             ));
-                            return exitDate >= selectedDate;
+                            return exitDate >= endFilterDate;
                         }
                         return true;
                     });
@@ -738,7 +817,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 if (status) {
-                    const response = await fetch(`https://192.168.3.73:3001/${endpoint}/${visitor.id}/status/${status}`, {
+                    const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${visitor.id}/status/${status}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
@@ -825,8 +904,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const isExited = progress.dataset.isExited === 'true' || false;
             const steps = progress.querySelectorAll('.step');
 
-            console.log(`Updating steps: status=${status}, isDisapproved=${isDisapproved}, isExited=${isExited}`);
-
             steps.forEach(step => {
                 step.classList.remove('active', 'red');
                 const stepType = step.dataset.step;
@@ -839,17 +916,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (shouldHighlight) {
                     if (isDisapproved) {
-                        console.log(`Applying red class to step ${stepType} due to disapproval`);
                         step.classList.add('red');
                     } else if (isExited && stepType === 'exit') {
-                        console.log(`Applying red class to exit step due to exit status`);
                         step.classList.add('red');
                     } else {
-                        console.log(`Applying active (green) class to step ${stepType}`);
                         step.classList.add('active');
                     }
-                } else {
-                    console.log(`Step ${stepType} not highlighted (gray)`);
                 }
             });
         });
@@ -860,7 +932,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Watch for Alpine.js updates
     document.addEventListener('alpine:initialized', updateSteps);
-    setInterval(updateSteps, 1000);
+    
+    // Create a MutationObserver to watch for changes in the DOM
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                updateSteps();
+            }
+        });
+    });
+
+    // Start observing the document body for changes
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 });
 
 // Initialize page

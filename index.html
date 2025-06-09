@@ -115,12 +115,12 @@
                     <!-- Existing Tables -->
                     <div class="mb-0 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         <!-- ✅ Upcoming Appointments Panel with Working Search -->
-                        <div class="panel" x-data="upcomingAppointments" x-init="fetchUpcomingAppointments()">
+                        <div class="panel" x-data="upcomingAppointments">
                             <div class="mb-3 flex items-center justify-between">
                                 <h3 class="text-lg font-bold"><b>Upcoming Appointment</b></h3>
                                 <div class="dataTable-search">
                                     <input class="dataTable-input" placeholder="Search..." type="text"
-                                        :value="searchQuery" @input="searchQuery = $event.target.value"
+                                        x-model="searchQuery"
                                         autocomplete="off" spellcheck="false" />
                                 </div>
                             </div>
@@ -138,23 +138,28 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- If no matches -->
-                                            <template x-if="filteredAppointments.length === 0">
+                                            <template x-if="!appointmentsList || appointmentsList.length === 0">
                                                 <tr>
-                                                    <td colspan="6" class="text-center">No appointments available</td>
+                                                    <td colspan="5" class="text-center">No appointments available</td>
                                                 </tr>
                                             </template>
-
-                                            <!-- Render filtered list -->
-                                            <template x-for="appointment in filteredAppointments" :key="appointment.id">
+                                            
+                                            <template x-for="(appointment, index) in filteredAppointments" :key="appointment.id">
                                                 <tr>
                                                     <td x-text="`${appointment.firstName} ${appointment.lastName}`"></td>
                                                     <td x-text="appointment.date"></td>
                                                     <td x-text="appointment.allocatedTime"></td>
-                                                    <td x-text="appointment.typeOfPass"></td>
+                                                    <td>
+                                                        <span
+                                                            class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
+                                                            :class="appointment.typeOfPass === 'preapproval' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                                                            x-text="appointment.typeOfPass"
+                                                        ></span>
+                                                    </td>
                                                     <td>
                                                         <span class="host-name" x-text="appointment.host"
-                                                            :title="`Department: ${appointment.department}, Designation: ${appointment.designation}`"></span>
+                                                              :title="`Department: ${appointment.department}, Designation: ${appointment.designation}`">
+                                                        </span>
                                                     </td>
                                                 </tr>
                                             </template>
@@ -194,17 +199,27 @@
                                             </template>
                         
                                             <!-- Loop through filtered list -->
-                                            <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
-                                                <tr>
-                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
-                                                    <td x-text="visitor.allocatedTime"></td>
-                                                    <td x-text="visitor.typeOfPass"></td>
-                                                    <td>
-                                                        <span class="host-name" x-text="visitor.host"
-                                                            :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
-                                                    </td>
-                                                </tr>
+                                            <template x-if="visitorsList">
+                                                <template x-for="(visitor, index) in filteredVisitors" :key="`${visitor.id}-${visitor.recordType}`">
+                                                    <tr>
+                                                        <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
+                                                        <td x-text="visitor.allocatedTime"></td>
+                                                        <td>
+                                                            <span
+                                                                class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
+                                                                :class="visitor.typeOfPass === 'preapproval' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                                                                x-text="visitor.typeOfPass"
+                                                            ></span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="host-name" x-text="visitor.host"
+                                                                  :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`">
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </template>
                                             </template>
+                                            
                                         </tbody>
                                     </table>
                                 </div>
@@ -231,74 +246,88 @@
                     </div>
 
                     <div class="mb-5 grid grid-cols-1">
-                    <!-- ✅ Visitor Details Table Panel with Search and Date Filter -->
-                    <div class="panel3" x-data="visitorDetails" x-init="fetchVisitorDetails()">
-                        <div class="mb-3 flex items-center justify-between">
-                            <h3 class="text-lg font-bold"><b>Today's Visitor Details</b></h3>
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1">
-                                    <input type="date" id="visitor-date" name="date"
-                                        class="w-full text-xs px-3 py-2 border rounded"
-                                        :value="selectedDate" @change="selectedDate = $event.target.value; fetchVisitorDetails()" />
-                                    <span class="error text-red-500 text-xs" id="error-date"></span>
-                                </div>
-                                <div class="dataTable-search">
-                                    <input class="dataTable-input" placeholder="Search..." type="text"
-                                        :value="searchQuery" @input="searchQuery = $event.target.value"
-                                        autocomplete="off" spellcheck="false" />
+                        <!-- ✅ Visitor Details Table Panel with Search, Date Filter, and Time Range Dropdown -->
+                        <div class="panel3" x-data="visitorDetails" x-init="fetchVisitorDetails()">
+                            <div class="mb-3 flex items-center justify-between">
+                                <h3 class="text-lg font-bold"><b>Visitor Details</b></h3>
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-1">
+                                        <select id="time-range" name="time-range"
+                                            class="w-full text-xs px-3 py-2 border rounded"
+                                            @change="timeRange = $event.target.value; fetchVisitorDetails()">
+                                            <option value="today" selected>Today</option>
+                                            <option value="tomorrow">Tomorrow</option>
+                                            <option value="previous">Previous Day</option>
+                                            <option value="month">This Month</option>
+                                            <option value="year">This Year</option>
+                                            <option value="custom">Custom Date</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1" x-show="timeRange === 'custom'">
+                                        <input type="date" id="visitor-date" name="date"
+                                            class="w-full text-xs px-3 py-2 border rounded"
+                                            :value="selectedDate" @change="selectedDate = $event.target.value; fetchVisitorDetails()" />
+                                        <span class="error text-red-500 text-xs" id="error-date"></span>
+                                    </div>
+                                    <div class="dataTable-search">
+                                        <input class="dataTable-input" placeholder="Search..." type="text"
+                                            :value="searchQuery" @input="searchQuery = $event.target.value"
+                                            autocomplete="off" spellcheck="false" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <div class="table-container1">
-                                <table class="table-hover whitespace-nowrap w-full">
-                                    <thead>
-                                        <tr>
-                                            <th>Full Name</th>
-                                            <th>Visit Time</th>
-                                            <th>Contact Number</th>
-                                            <th>Type Of Passes</th>
-                                            <th>Host</th>
-                                            <th>Purpose</th>
-                                            <th>National ID</th>
-                                            <th>Pending</th>
-                                            <th>InCampus</th>
-                                            <th>Complete</th>
-                                            <th>Exit</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- If no matches -->
-                                        <template x-if="filteredVisitors.length === 0">
+                            <div class="overflow-x-auto">
+                                <div class="table-container1">
+                                    <table class="table-hover whitespace-nowrap w-full">
+                                        <thead>
                                             <tr>
-                                                <td colspan="11" class="text-center">No visitors available</td>
+                                                <th>Full Name</th>
+                                                <th>Date</th>
+                                                <th>Visit Time</th>
+                                                <th>Contact Number</th>
+                                                <th>Type Of Passes</th>
+                                                <th>Host</th>
+                                                <th>Purpose</th>
+                                                <th>National ID</th>
+                                                <th>Pending</th>
+                                                <th>InCampus</th>
+                                                <th>Complete</th>
+                                                <th>Exit</th>
                                             </tr>
-                                        </template>
+                                        </thead>
+                                        <tbody>
+                                            <!-- If no matches -->
+                                            <!-- <template x-if="filteredVisitors.length === 0">
+                                                <tr>
+                                                    <td colspan="11" class="text-center">No visitors available</td>
+                                                </tr>
+                                            </template> -->
 
-                                        <!-- Filtered Rows -->
-                                        <template x-for="(visitor, index) in filteredVisitors" :key="visitor.id">
-                                            <tr>
-                                                <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
-                                                <td x-text="visitor.allocatedTime"></td>
-                                                <td x-text="visitor.contactnumber"></td>
-                                                <td x-text="visitor.typeOfPass"></td>
-                                                <td>
-                                                    <span class="host-name" x-text="visitor.host"
-                                                        :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
-                                                </td>
-                                                <td x-text="visitor.purpose"></td>
-                                                <td x-text="visitor.nationalId"></td>
-                                                <!-- Progress Steps -->
-                                                <td colspan="4" class="td1">
-                                                    <div x-html="renderProgressSteps(visitor)"></div>
-                                                </td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
+                                            <!-- Filtered Rows -->
+                                            <template x-for="(visitor, index) in filteredVisitors" :key="`${visitor.id}-${visitor.recordType}`">
+                                                <tr>
+                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
+                                                    <td x-text="visitor.date.split('-').reverse().join('-')"></td>
+                                                    <td x-text="visitor.allocatedTime"></td>
+                                                    <td x-text="visitor.contactnumber"></td>
+                                                    <td x-text="visitor.typeOfPass"></td>
+                                                    <td>
+                                                        <span class="host-name" x-text="visitor.host"
+                                                            :title="`Department: ${visitor.department}, Designation: ${visitor.designation}`"></span>
+                                                    </td>
+                                                    <td x-text="visitor.purpose"></td>
+                                                    <td x-text="visitor.nationalId"></td>
+                                                    <!-- Progress Steps -->
+                                                    <td colspan="4" class="td1">
+                                                        <div x-html="renderProgressSteps(visitor)"></div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     </div>
                 </div>
                 <!-- end main content section -->
@@ -309,6 +338,7 @@
             <!-- end footer section -->
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="assets/js/alpine-collaspe.min.js"></script>
     <script src="assets/js/alpine-persist.min.js"></script>
@@ -331,6 +361,6 @@
     <script src="assets/js/vms_js/sidebar.js"></script>
     <script src="assets/js/vms_js/screen-loader.js"></script>
     <script src="assets/js/vms_js/footer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
 </body>
 </html>

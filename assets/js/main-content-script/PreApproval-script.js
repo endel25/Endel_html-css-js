@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchGender() {
         try {
-            const response = await fetch('https://192.168.3.73:3001/gender');
+            const response = await fetch('https://192.168.1.82:3001/gender');
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`https://192.168.3.73:3001/master-records/by-contact?contactnumber=${encodeURIComponent(contactnumber)}`, {
+            const response = await fetch(`https://192.168.1.82:3001/master-records/by-contact?contactnumber=${encodeURIComponent(contactnumber)}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('📤 Final form data:', Object.fromEntries(formData));
 
         // Initiate the POST request and redirect immediately
-        fetch('https://192.168.3.73:3001/appointment/create', {
+        fetch('https://192.168.1.82:3001/appointment/create', {
             method: 'POST',
             body: formData,
         })

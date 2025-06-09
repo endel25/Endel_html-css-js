@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkFormStatus(email, date, time) {
         try {
             const response = await fetch(
-                `https://192.168.3.73:3001/appointment/safety-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
+                `https://192.168.1.82:3001/appointment/safety-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
                 {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 console.log('📤 Sending safety acknowledgment:', JSON.stringify(payload, null, 2));
 
-                const response = await fetch('https://192.168.3.73:3001/appointment/safety', {
+                const response = await fetch('https://192.168.1.82:3001/appointment/safety', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
