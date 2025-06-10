@@ -9,7 +9,7 @@ let isPersonNameValid = false;
 // Base URL for the backend API
 const API_BASE_URL = 'https://192.168.3.73:3001';
 
-// Function to get SpotEntry permissions from localStorage (aligned with reference script)
+// Function to get SpotEntry permissions from localStorage
 function getPermissions() {
     const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
     const spotEntry = permissions.find(p => p.name === 'SpotEntry') || {
@@ -97,14 +97,11 @@ function populateDropdown(selectId, data, valueKey = 'name', selectedValue = '')
 // Fetch and populate dropdowns
 async function fetchAndPopulateDropdowns(visitor) {
     try {
-        // Fetch Genders
         const genders = await apiRequest('gender');
         populateDropdown('edit-gender', genders, 'name', visitor.gender || '');
 
-        // Fetch Purpose of Visits
         const purposes = await apiRequest('purpose-of-visit');
         populateDropdown('edit-visit', purposes, 'name', visitor.visit || '');
-        // Add 'Others' option for Purpose of Visit
         const visitSelect = document.getElementById('edit-visit');
         const othersOption = document.createElement('option');
         othersOption.value = 'Others';
@@ -114,11 +111,9 @@ async function fetchAndPopulateDropdowns(visitor) {
         }
         visitSelect.appendChild(othersOption);
 
-        // Fetch Visitor Types
         const visitorTypes = await apiRequest('visitor-type');
         populateDropdown('edit-visitortype', visitorTypes, 'name', visitor.visitortype || '');
 
-        // Fetch Time Units
         const timeUnits = await apiRequest('time-duration-unit');
         populateDropdown('edit-durationUnit', timeUnits, 'name', visitor.durationunit || visitor.durationUnit || '');
     } catch (error) {
@@ -130,14 +125,16 @@ async function fetchAndPopulateDropdowns(visitor) {
 // Handle Purpose of Visit 'Others' option
 const visitSelect = document.getElementById('edit-visit');
 const customPurposeInput = document.getElementById('custom-purpose');
-visitSelect.addEventListener('change', function () {
-    if (this.value === 'Others') {
-        customPurposeInput.classList.remove('hidden');
-    } else {
-        customPurposeInput.classList.add('hidden');
-        customPurposeInput.value = '';
-    }
-});
+if (visitSelect && customPurposeInput) {
+    visitSelect.addEventListener('change', function () {
+        if (this.value === 'Others') {
+            customPurposeInput.classList.remove('hidden');
+        } else {
+            customPurposeInput.classList.add('hidden');
+            customPurposeInput.value = '';
+        }
+    });
+}
 
 // Debounce function to limit API calls
 function debounce(func, wait) {
@@ -172,7 +169,7 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
 
     try {
         const response = await fetch(
-            `https://192.168.3.73:3001/users/search?query=${encodeURIComponent(query)}`,
+            `${API_BASE_URL}/users/search?query=${encodeURIComponent(query)}`,
             {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -185,7 +182,6 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
             const users = data.users || [];
 
             if (isValidationCheck) {
-                // For validation check, we only care if the person exists
                 const matched = users.some(user => {
                     const displayName = user.userName || `${user.firstName || ''} ${user.lastName || ''}`.trim();
                     return displayName.toLowerCase() === query.toLowerCase();
@@ -200,7 +196,6 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
                 return true;
             }
 
-            // For suggestion display
             suggestionsContainer.innerHTML = '';
             if (users.length === 0) {
                 suggestionsContainer.classList.add('hidden');
@@ -229,7 +224,6 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
                     isPersonNameValid = true;
                     errorElement.textContent = '';
                     
-                    // Update the original visitor data to reflect the change
                     const visitorId = document.getElementById('edit-visitorId')?.value;
                     if (visitorId) {
                         const visitor = visitors.find(v => v.id === parseInt(visitorId));
@@ -274,10 +268,7 @@ function attachPersonNameListeners() {
         personnameInput.addEventListener('input', debouncedFetchSuggestions);
 
         document.addEventListener('click', e => {
-            if (
-                !personnameInput.contains(e.target) &&
-                !suggestionsContainer.contains(e.target)
-            ) {
+            if (!personnameInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
                 suggestionsContainer.classList.add('hidden');
             }
         });
@@ -295,21 +286,18 @@ function attachPersonNameListeners() {
 // Function to filter visitors based on user role and personnameid
 function filterVisitorsByUserRole(visitors) {
     const userRole = localStorage.getItem('role');
-    const userId = localStorage.getItem('userId'); // Get user's ID from localStorage
+    const userId = localStorage.getItem('userId');
     
     console.log('Filtering visitors - User Role:', userRole);
     console.log('Filtering visitors - User ID:', userId);
     console.log('All visitors before filtering:', visitors);
     
-    // If user is superadmin, admin, or security, show all entries
     if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
         console.log('User is admin/security, showing all entries');
         return visitors;
     }
     
-    // For other users, only show entries where personnameid matches their userId
     const filteredVisitors = visitors.filter(visitor => {
-        // Convert both IDs to strings for comparison to handle both string and number types
         const visitorPersonnameId = String(visitor.personnameid);
         const userPersonnameId = String(userId);
         
@@ -330,7 +318,7 @@ function filterVisitorsByUserRole(visitors) {
 async function fetchVisitors() {
     try {
         console.log('Fetching visitors from https://192.168.3.73:3001/visitors');
-        const response = await fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+        const response = await fetch(`${API_BASE_URL}/visitors?t=${new Date().getTime()}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
@@ -342,7 +330,6 @@ async function fetchVisitors() {
         const data = await response.json();
         console.log('Raw data from server:', data);
         
-        // Filter the visitors based on user role
         const filteredVisitors = filterVisitorsByUserRole(data);
         console.log('After filtering:', filteredVisitors);
         
@@ -352,7 +339,6 @@ async function fetchVisitors() {
             durationunit: visitor.durationunit || visitor.durationUnit || '',
         }));
 
-        // Sort visitors by id in descending order
         visitors.sort((a, b) => b.id - a.id);
         console.log('Final visitors array:', visitors);
 
@@ -374,7 +360,7 @@ async function fetchVisitors() {
 
 function showModal(fileInputId) {
     currentFileInputId = fileInputId;
-    const modalId = 'photoModal'; // Single modal for source selection (Gallery/Camera)
+    const modalId = 'photoModal';
     const modal = document.getElementById(modalId);
     console.log(`Attempting to show ${modalId}, element:`, modal);
     if (modal) {
@@ -425,11 +411,11 @@ function openGallery() {
             }, 1000);
         } catch (error) {
             console.error('Error triggering file input:', error);
-            showError('error-' + currentFileInputId, 'Failed to open gallery');
+            showMessage('Failed to open gallery', 'error');
         }
     } else {
         console.error(`File input ${currentFileInputId} not found`);
-        showError('error-' + currentFileInputId, 'File input not found');
+        showMessage('File input not found', 'error');
     }
     closeModal();
 }
@@ -442,7 +428,7 @@ async function openCamera() {
         await startCamera(fileInput);
     } else {
         console.error(`File input ${currentFileInputId} not found`);
-        showError('error-' + currentFileInputId, 'File input not found');
+        showMessage('File input not found', 'error');
     }
     closeModal();
 }
@@ -452,21 +438,18 @@ async function startCamera(fileInput) {
     const video = document.getElementById(videoId);
     const cameraModal = document.getElementById(currentModalId);
 
-    // Check if required elements exist
     if (!video || !cameraModal) {
         console.error('Camera modal elements not found');
-        showError('error-' + currentFileInputId, 'Camera modal elements not found');
+        showMessage('Camera modal elements not found', 'error');
         return;
     }
 
-    // Check browser support for getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         console.error('getUserMedia is not supported in this browser');
-        showError('error-' + currentFileInputId, 'Camera access not supported in this browser');
+        showMessage('Camera access not supported in this browser', 'error');
         return;
     }
 
-    // Configure video constraints with fallback
     const tryCameraWithConstraints = async (facingMode) => {
         const constraints = {
             video: {
@@ -482,10 +465,10 @@ async function startCamera(fileInput) {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             console.log('Camera stream successfully obtained');
             video.srcObject = stream;
-            cameraModal.style.display = 'flex'; // Show the camera modal
+            cameraModal.style.display = 'flex';
             video.play().catch(err => {
                 console.error('Error playing video stream:', err);
-                showError('error-' + currentFileInputId, 'Failed to play camera stream');
+                showMessage('Failed to play camera stream', 'error');
                 stopCamera();
             });
         } catch (err) {
@@ -493,7 +476,6 @@ async function startCamera(fileInput) {
         }
     };
 
-    // Try with 'environment' (rear camera), fall back to 'user' (front camera) if it fails
     try {
         await tryCameraWithConstraints('environment');
     } catch (err) {
@@ -521,7 +503,7 @@ function handleCameraError(err) {
     } else if (err.name === 'OverconstrainedError') {
         errorMessage = 'Camera constraints not supported on this device';
     }
-    showError('error-' + currentFileInputId, errorMessage);
+    showMessage(errorMessage, 'error');
     stopCamera();
 }
 
@@ -544,24 +526,21 @@ function capturePhoto(fileInputId) {
 
     if (!video || !fileInput) {
         console.error('Camera elements or file input not found');
-        showError('error-' + fileInputId, 'Camera elements not found');
+        showMessage('Camera elements not found', 'error');
         return;
     }
 
-    // Create a temporary canvas for capturing
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Draw the current video frame onto the canvas
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert canvas to blob and create a file
     canvas.toBlob(blob => {
         if (!blob) {
             console.error('Failed to create blob from canvas');
-            showError('error-' + fileInputId, 'Failed to capture photo');
+            showMessage('Failed to capture photo', 'error');
             return;
         }
 
@@ -571,13 +550,11 @@ function capturePhoto(fileInputId) {
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
 
-        // Trigger preview update
         const previewId = (fileInputId === 'edit-driverphoto') ? 'driverPreview' : 'mainPreview';
         previewImage(fileInput, previewId);
 
-        // Cleanup
         closeCameraModal();
-    }, 'image/jpeg', 0.9); // Use 90% quality for JPEG
+    }, 'image/jpeg', 0.9);
 }
 
 function previewImage(input, id) {
@@ -605,11 +582,9 @@ function toggleDriverDetails() {
     }
 
     const isHidden = !driverToggle.checked;
-    console.log('Toggling driver details, isHidden:', isHidden, 'Current classes:', driverDetails.className);
+    console.log('Toggling driver details, isHidden:', isHidden);
     driverDetails.classList.toggle('hidden', isHidden);
-
     driverDetails.style.display = isHidden ? 'none' : 'grid';
-    void driverDetails.offsetHeight;
 
     if (driverToggle.checked) {
         console.log('Showing driver details');
@@ -620,8 +595,7 @@ function toggleDriverDetails() {
             document.getElementById('edit-drivernationalid').value = visitor.drivernationalid || '';
             const driverPreview = document.getElementById('driverPreview');
             if (visitor.driverphoto) {
-                const driverPhotoUrl = `https://192.168.3.73:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
-                driverPreview.src = '';
+                const driverPhotoUrl = `${API_BASE_URL}/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
                 driverPreview.src = driverPhotoUrl;
                 driverPreview.style.display = 'block';
                 console.log('Driver photo URL set to:', driverPhotoUrl);
@@ -638,11 +612,6 @@ function toggleDriverDetails() {
         document.getElementById('edit-drivernationalid').value = '';
         document.getElementById('driverPreview').style.display = 'none';
     }
-    console.log('Driver details state after toggle:', {
-        className: driverDetails.className,
-        style: driverDetails.style.display,
-        offsetHeight: driverDetails.offsetHeight
-    });
 }
 
 function setButtonVisibility(visitorId, state) {
@@ -679,7 +648,7 @@ function populateTable() {
     }
     tableBody.innerHTML = '';
 
-    const permissions = getPermissions(); // Fetch permissions for rendering
+    const permissions = getPermissions();
     const canUpdate = permissions.canUpdate;
     const canDelete = permissions.canDelete;
     console.log('Permissions for table rendering:', { canUpdate, canDelete });
@@ -715,7 +684,7 @@ function populateTable() {
                              ${canUpdate ? `onclick="openEditModal('${visitor.id}')"` : ''} 
                              width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                              ${!canUpdate ? 'style="opacity: 0.6; cursor: not-allowed;" title="You do not have permission to update"' : ''}>
-                            <path d="M11.4001 18.1612L11.4001 18.1612L18.796 10.7653C17.7894 10.3464 16.5972 9.6582 15.4697 8.53068C14.342 7.40298 13.6537 6.21058 13.2348 5.2039L5.83882 12.5999L5.83879 12.5999C5.26166 13.1771 4.97307 13.4657 4.7249 13.7838C4.43213 14.1592 4.18114 14.5653 3.97634 14.995C3.80273 15.3593 3.67368 15.7465 3.41556 16.5208L2.05445 20.6042C1.92743 20.9852 2.0266 21.4053 2.31063 21.6894C2.59466 21.9734 3.01478 22.0726 3.39584 21.9456L7.47918 20.5844C8.25351 20.3263 8.6407 20.1973 9.00498 20.0237C9.43469 19.8189 9.84082 19.5679 10.2162 19.2751C10.5343 18.7383 11.4001 18.1612Z" fill="currentColor"></path>
+                            <path d="M11.4001 18.1612L18.796 10.7653C17.7894 10.3464 16.5972 9.6582 15.4697 8.53068C14.342 7.40298 13.6537 6.21058 13.2348 5.2039L5.83882 12.5999C5.26166 13.1771 4.97307 13.4657 4.7249 13.7838C4.43213 14.1592 4.18114 14.5653 3.97634 14.995C3.80273 15.3593 3.67368 15.7465 3.41556 16.5208L2.05445 20.6042C1.92743 20.9852 2.0266 21.4053 2.31063 21.6894C2.59466 21.9734 3.01478 22.0726 3.39584 21.9456L7.47918 20.5844C8.25351 20.3263 8.6407 20.1973 9.00498 20.0237C9.43469 19.8189 9.84082 19.5679 10.2162 19.2751C10.5343 18.7383 11.4001 18.1612Z" fill="currentColor"></path>
                             <path d="M20.8482 8.71306C22.3839 7.17735 22.3839 4.68748 20.8482 3.15178C19.3125 1.61607 16.8226 1.61607 15.2869 3.15178L14.3999 4.03882C14.4121 4.0755 14.4246 4.11268 14.4377 4.15035C14.7628 5.0875 15.3763 6.31601 16.5303 7.47002C17.6843 8.62403 18.9128 9.23749 19.85 9.56262C19.8875 9.57563 19.9245 9.58817 19.961 9.60026L20.8482 8.71306Z" fill="currentColor"></path>
                         </svg>
                         <svg class="action-btn" 
@@ -731,16 +700,6 @@ function populateTable() {
                 </td>
             `;
             tableBody.appendChild(row);
-
-            // Additional logging for button states
-            console.log(`Edit button for visitor ${visitor.id} state:`, {
-                hasOnClick: !!row.querySelector('.action-btn:nth-child(1)').getAttribute('onclick'),
-                style: row.querySelector('.action-btn:nth-child(1)').style.cssText
-            });
-            console.log(`Delete button for visitor ${visitor.id} state:`, {
-                hasOnClick: !!row.querySelector('.action-btn:nth-child(2)').getAttribute('onclick'),
-                style: row.querySelector('.action-btn:nth-child(2)').style.cssText
-            });
         });
     }
 
@@ -793,10 +752,8 @@ async function openEditModal(id) {
 
     console.log('Opening edit modal for visitor:', JSON.stringify(visitor, null, 2));
 
-    // Wait for dropdowns to be populated before setting values
     await fetchAndPopulateDropdowns(visitor);
 
-    // Define field mappings to handle discrepancies between visitor object and form field names
     const fieldMappings = {
         'edit-id': 'id',
         'edit-firstname': 'firstname',
@@ -819,9 +776,9 @@ async function openEditModal(id) {
         'edit-visit': 'visit',
         'edit-visitortype': 'visitortype',
         'edit-durationUnit': 'durationunit',
+        'edit-personnameid': 'personnameid',
     };
 
-    // Populate form fields
     Object.entries(fieldMappings).forEach(([fieldId, visitorKey]) => {
         const element = document.getElementById(fieldId);
         if (!element) {
@@ -833,7 +790,6 @@ async function openEditModal(id) {
         if (element.type === 'checkbox') {
             element.checked = !!value;
         } else if (fieldId === 'edit-date' && value) {
-            // Handle date format
             if (value.match(/^\d{2}-\d{2}-\d{4}$/)) {
                 const [day, month, year] = value.split('-');
                 element.value = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
@@ -843,24 +799,21 @@ async function openEditModal(id) {
                 element.value = '';
             }
         } else if (element.tagName.toLowerCase() === 'select') {
-            // Skip select elements as they are handled by fetchAndPopulateDropdowns
             return;
         } else {
             element.value = value;
         }
     });
 
-    // Validate personname on modal open without showing suggestions
     if (visitor.personname) {
         const nameMatch = visitor.personname.match(/^(.+?)\s*\(/);
         const queryName = nameMatch ? nameMatch[1].trim() : visitor.personname;
-        await fetchPersonNameSuggestions(queryName, true); // Validation check only
+        await fetchPersonNameSuggestions(queryName, true);
     } else {
         isPersonNameValid = false;
         document.getElementById('error-personname').textContent = 'Person name must be selected from suggestions';
     }
 
-    // Handle custom purpose for 'Others'
     if (visitor.visit === 'Others' && visitor.customPurpose) {
         customPurposeInput.value = visitor.customPurpose || '';
         customPurposeInput.classList.remove('hidden');
@@ -877,53 +830,28 @@ async function openEditModal(id) {
 
     const mainPreview = document.getElementById('mainPreview');
     if (visitor.photo) {
-        const photoUrl = `https://192.168.3.73:3001/uploads/${encodeURIComponent(visitor.photo)}?t=${new Date().getTime()}`;
-        console.log('Setting mainPreview URL:', photoUrl);
-        mainPreview.src = '';
+        const photoUrl = `${API_BASE_URL}/uploads/${encodeURIComponent(visitor.photo)}?t=${new Date().getTime()}`;
         mainPreview.src = photoUrl;
         mainPreview.style.display = 'block';
-        const imgTest = new Image();
-        imgTest.src = photoUrl;
-        imgTest.onload = () => {
-            console.log('Main photo loaded successfully:', photoUrl);
-            mainPreview.style.display = 'block';
-        };
-        imgTest.onerror = () => {
-            console.error('Main photo failed to load at:', photoUrl);
-            mainPreview.src = '';
-            mainPreview.style.display = 'none';
-        };
+        console.log('Setting mainPreview URL:', photoUrl);
     } else {
-        console.log('No main photo available for visitor:', visitor.id);
         mainPreview.src = '';
         mainPreview.style.display = 'none';
+        console.log('No main photo available for visitor:', visitor.id);
     }
 
     const driverPreview = document.getElementById('driverPreview');
     if (visitor.driverphoto) {
-        const driverPhotoUrl = `https://192.168.3.73:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
-        console.log('Setting driverPreview URL:', driverPhotoUrl);
-        driverPreview.src = '';
+        const driverPhotoUrl = `${API_BASE_URL}/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
         driverPreview.src = driverPhotoUrl;
         driverPreview.style.display = 'block';
-        const driverImgTest = new Image();
-        driverImgTest.src = driverPhotoUrl;
-        driverImgTest.onload = () => {
-            console.log('Driver photo loaded successfully:', driverPhotoUrl);
-            driverPreview.style.display = 'block';
-        };
-        driverImgTest.onerror = () => {
-            console.error('Driver photo failed to load at:', driverPhotoUrl);
-            driverPreview.src = '';
-            driverPreview.style.display = 'none';
-        };
+        console.log('Setting driverPreview URL:', driverPhotoUrl);
     } else {
-        console.log('No driver photo available for visitor:', visitor.id);
         driverPreview.src = '';
         driverPreview.style.display = 'none';
+        console.log('No driver photo available for visitor:', visitor.id);
     }
 
-    // Display current status
     const statusDisplay = document.getElementById('statusDisplay');
     if (statusDisplay) {
         if (visitor.isApproved) {
@@ -954,12 +882,8 @@ function closeEditModal() {
     const driverPreview = document.getElementById('driverPreview');
     const suggestionsContainer = document.getElementById('edit-personname-suggestions');
 
-    if (editModal) {
-        editModal.style.display = 'none';
-    }
-    if (editForm) {
-        editForm.reset();
-    }
+    if (editModal) editModal.style.display = 'none';
+    if (editForm) editForm.reset();
     if (mainPreview) {
         mainPreview.src = '';
         mainPreview.style.display = 'none';
@@ -970,9 +894,7 @@ function closeEditModal() {
         driverPreview.style.display = 'none';
         console.log('Driver preview reset');
     }
-    if (suggestionsContainer) {
-        suggestionsContainer.classList.add('hidden');
-    }
+    if (suggestionsContainer) suggestionsContainer.classList.add('hidden');
     isPersonNameValid = false;
     clearErrors();
     const driverToggle = document.getElementById('edit-driverToggle');
@@ -1022,7 +944,6 @@ function validateForm(visitor) {
         }
     });
 
-    // Validate personname
     if (!isPersonNameValid) {
         document.getElementById('error-personname').textContent = 'Person name must be selected from suggestions';
         isValid = false;
@@ -1073,7 +994,7 @@ async function updateVisitorStatus(visitorId, status) {
     }
 
     try {
-        const response = await fetch(`https://192.168.3.73:3001/visitors/${visitorId}/status/${status}?sendEmail=false`, {
+        const response = await fetch(`${API_BASE_URL}/visitors/${visitorId}/status/${status}?sendEmail=false`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -1086,9 +1007,8 @@ async function updateVisitorStatus(visitorId, status) {
         }
 
         const updatedVisitor = await response.json();
-        console.log(`Visitor status updated to ${status}: | isApproved: ${updatedVisitor.isApproved} | complete: ${updatedVisitor.complete} | exit: ${updatedVisitor.exit}`, updatedVisitor);
+        console.log(`Visitor status updated to ${status}:`, updatedVisitor);
 
-        // Update local visitors array
         const index = visitors.findIndex(v => v.id == visitorId);
         if (index !== -1) {
             visitors[index] = {
@@ -1106,22 +1026,21 @@ async function updateVisitorStatus(visitorId, status) {
     }
 }
 
-// Function to handle the background update process
 async function updateVisitorInBackground(updatedVisitor, apiFormData, originalVisitor) {
     try {
-        const response = await fetch(`https://192.168.3.73:3001/visitors/${updatedVisitor.id}`, {
+        const response = await fetch(`${API_BASE_URL}/visitors/${updatedVisitor.id}`, {
             method: 'PATCH',
             body: apiFormData,
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
         const responseData = await response.json();
         console.log('PATCH response status:', response.status, 'data:', JSON.stringify(responseData, null, 2));
 
-        if (!response.ok) {
-            throw new Error(responseData.message || `HTTP ${response.status}`);
-        }
-
-        // Update local visitors array with the actual backend response
         const index = visitors.findIndex(v => v.id == updatedVisitor.id);
         if (index !== -1) {
             visitors[index] = {
@@ -1130,19 +1049,19 @@ async function updateVisitorInBackground(updatedVisitor, apiFormData, originalVi
                 date: responseData.date ? responseData.date.split('-').reverse().join('-') : visitors[index].date,
                 photo: responseData.photo || visitors[index].photo || null,
                 driverphoto: responseData.driverphoto || visitors[index].driverphoto || null,
+                durationunit: responseData.durationUnit || responseData.durationunit || visitors[index].durationunit || '',
             };
-            console.log('Updated visitor in array with backend data:', JSON.stringify(visitors[index], null, 2));
+            console.log('Updated visitor in array:', JSON.stringify(visitors[index], null, 2));
             localStorage.setItem('visitors', JSON.stringify(visitors));
         } else {
             console.warn('Visitor not found in array for id:', updatedVisitor.id);
         }
 
-        await fetchVisitors();
+        populateTable();
     } catch (error) {
         console.error('Failed to update visitor:', error.message);
         showMessage(`Failed to update visitor: ${error.message}`, 'error');
 
-        // Revert the optimistic update
         const index = visitors.findIndex(v => v.id == updatedVisitor.id);
         if (index !== -1) {
             visitors[index] = { ...originalVisitor };
@@ -1153,7 +1072,7 @@ async function updateVisitorInBackground(updatedVisitor, apiFormData, originalVi
     }
 }
 
-document.getElementById('editForm').addEventListener('submit', async function (e) {
+document.getElementById('editForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearErrors();
     console.log('Edit form submitted');
@@ -1199,63 +1118,85 @@ document.getElementById('editForm').addEventListener('submit', async function (e
             Updating...
         `;
 
-        // Store the original visitor data for potential rollback
         const originalVisitor = { ...visitors.find(v => v.id == updatedVisitor.id) };
 
-        // Optimistically update the local visitors array
         const index = visitors.findIndex(v => v.id == updatedVisitor.id);
         if (index !== -1) {
+            const photoUrl = updatedVisitor.photo && updatedVisitor.photo.size > 0 
+                ? URL.createObjectURL(updatedVisitor.photo) 
+                : originalVisitor.photo;
+            const driverPhotoUrl = updatedVisitor.driverToggle && updatedVisitor.driverphoto && updatedVisitor.driverphoto.size > 0 
+                ? URL.createObjectURL(updatedVisitor.driverphoto) 
+                : originalVisitor.driverphoto;
+
             visitors[index] = {
                 ...visitors[index],
                 ...updatedVisitor,
                 date: updatedVisitor.date,
-                photo: updatedVisitor.photo && updatedVisitor.photo.size > 0 ? URL.createObjectURL(updatedVisitor.photo) : visitors[index].photo,
-                driverphoto: updatedVisitor.driverToggle && updatedVisitor.driverphoto && updatedVisitor.driverphoto.size > 0 ? URL.createObjectURL(updatedVisitor.driverphoto) : visitors[index].driverphoto,
+                photo: photoUrl,
+                driverphoto: updatedVisitor.driverToggle ? driverPhotoUrl : null,
+                durationunit: updatedVisitor.durationUnit,
             };
             console.log('Optimistically updated visitor:', JSON.stringify(visitors[index], null, 2));
             localStorage.setItem('visitors', JSON.stringify(visitors));
             populateTable();
         }
 
-        // Prepare FormData for the API
         const apiFormData = new FormData();
-        Object.keys(updatedVisitor).forEach(key => {
-            if (key !== 'photo' && key !== 'driverphoto' && key !== 'driverToggle' && key !== 'id' && updatedVisitor[key] !== null && updatedVisitor[key] !== undefined) {
-                apiFormData.append(key, updatedVisitor[key]);
+        const fieldsToSend = {
+            firstname: updatedVisitor.firstname,
+            lastname: updatedVisitor.lastname,
+            contactnumber: updatedVisitor.contactnumber,
+            nationalid: updatedVisitor.nationalid,
+            gender: updatedVisitor.gender,
+            email: updatedVisitor.email,
+            date: updatedVisitor.date,
+            time: updatedVisitor.time,
+            visit: updatedVisitor.visit,
+            customPurpose: updatedVisitor.customPurpose || '',
+            personname: updatedVisitor.personname,
+            personnameid: updatedVisitor.personnameid,
+            department: updatedVisitor.department,
+            durationUnit: updatedVisitor.durationUnit,
+            durationtime: updatedVisitor.durationtime,
+            visitortype: updatedVisitor.visitortype,
+            vehicletype: updatedVisitor.vehicletype || '',
+            vehiclenumber: updatedVisitor.vehiclenumber || '',
+            drivername: updatedVisitor.driverToggle ? updatedVisitor.drivername || '' : '',
+            drivermobile: updatedVisitor.driverToggle ? updatedVisitor.drivermobile || '' : '',
+            drivernationalid: updatedVisitor.driverToggle ? updatedVisitor.drivernationalid || '' : '',
+            notes: updatedVisitor.notes || '',
+            driverToggle: updatedVisitor.driverToggle.toString(),
+        };
+
+        Object.entries(fieldsToSend).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                apiFormData.append(key, value);
             }
         });
-        apiFormData.append('driverToggle', updatedVisitor.driverToggle.toString());
 
-        const hasPhoto = updatedVisitor.photo && updatedVisitor.photo.size > 0;
-        const hasDriverPhoto = updatedVisitor.driverToggle && updatedVisitor.driverphoto && updatedVisitor.driverphoto.size > 0;
-        const existingVisitor = visitors.find(v => v.id == updatedVisitor.id);
-
-        if (hasPhoto) {
+        if (updatedVisitor.photo && updatedVisitor.photo.size > 0) {
             apiFormData.append('photoFile', updatedVisitor.photo);
-        } else if (existingVisitor?.photo) {
-            apiFormData.append('photo', existingVisitor.photo);
+        } else if (originalVisitor.photo) {
+            apiFormData.append('photo', originalVisitor.photo);
         }
 
-        if (hasDriverPhoto) {
+        if (updatedVisitor.driverToggle && updatedVisitor.driverphoto && updatedVisitor.driverphoto.size > 0) {
             apiFormData.append('driverPhotoFile', updatedVisitor.driverphoto);
-        } else if (updatedVisitor.driverToggle && existingVisitor?.driverphoto) {
-            apiFormData.append('driverphoto', existingVisitor.driverphoto);
+        } else if (updatedVisitor.driverToggle && originalVisitor.driverphoto) {
+            apiFormData.append('driverphoto', originalVisitor.driverphoto);
         }
 
-        // Log FormData for debugging
-        console.log('Preparing to send PATCH with FormData for id:', updatedVisitor.id);
+        console.log('Sending PATCH with FormData for id:', updatedVisitor.id);
         for (const [key, value] of apiFormData.entries()) {
             console.log(`${key}:`, value instanceof File ? value.name : value);
         }
 
-        // Close modal immediately and show optimistic success toast
         closeEditModal();
         showMessage('Visitor updated successfully', 'success');
 
-        // Perform the update in the background
-        updateVisitorInBackground(updatedVisitor, apiFormData, originalVisitor);
+        await updateVisitorInBackground(updatedVisitor, apiFormData, originalVisitor);
 
-        // Reset button state
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'Update';
     }
@@ -1284,7 +1225,7 @@ async function deleteVisitor(id) {
         .then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`https://192.168.3.73:3001/visitors/${id}`, {
+                    const response = await fetch(`${API_BASE_URL}/visitors/${id}`, {
                         method: 'DELETE',
                     });
 
@@ -1299,8 +1240,7 @@ async function deleteVisitor(id) {
                     showMessage('Visitor deleted successfully', 'success');
                 } catch (error) {
                     console.error('Failed to delete visitor:', error.message);
-                    document.getElementById('error-notes').textContent = error.message || 'Failed to update visitor';
-                    swalWithBootstrapButtons.fire('Error', 'Failed to delete visitor', 'error');
+                    showMessage('Failed to delete visitor', 'error');
                 }
             }
         });
@@ -1312,7 +1252,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.querySelector('.dataTable-input');
     if (input) input.id = 'searchInput';
 
-    // Apply permissions to "Schedule Appointment" button (aligned with reference script)
     const permissions = getPermissions();
     const scheduleBtn = document.querySelector('a[href="spot.html"]');
     if (scheduleBtn) {
@@ -1329,12 +1268,6 @@ document.addEventListener('DOMContentLoaded', () => {
             scheduleBtn.title = '';
             scheduleBtn.setAttribute('aria-disabled', 'false');
         }
-        console.log('Schedule Appointment button state:', {
-            classList: scheduleBtn.classList.toString(),
-            pointerEvents: scheduleBtn.style.pointerEvents,
-            opacity: scheduleBtn.style.opacity,
-            ariaDisabled: scheduleBtn.getAttribute('aria-disabled')
-        });
     }
 
     document.getElementById('entriesPerPage')?.addEventListener('change', function () {
@@ -1388,13 +1321,9 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchVisitors();
     });
 
-    // Attach personname listeners
     attachPersonNameListeners();
-
-    // Fetch visitors on load
     fetchVisitors();
 
-    // Show success message if visitor was created
     if (sessionStorage.getItem('visitorCreated') === 'true') {
         showMessage('Visitor created successfully', 'success', 'top-right', true, 3000);
         sessionStorage.removeItem('visitorCreated');
