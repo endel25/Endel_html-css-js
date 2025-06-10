@@ -779,13 +779,13 @@ async function openVisitorModal(visitorId) {
 document.getElementById('visitorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const visitorId = e.target.getAttribute('data-id');
-
+ 
     try {
         if (!originalVisitorData) {
             showMessage('Data not loaded', 'error');
             return;
         }
-
+ 
         const requiredFields = [
             { key: 'firstname', error: 'First name is required' },
             { key: 'gender', error: 'Gender is required' },
@@ -808,13 +808,13 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
             showMessage(`Please fill in: ${missingFields.map(f => f.error).join(', ')}`, 'error');
             return;
         }
-
+ 
         if (!isPersonNameValid) {
             showMessage('Person name must be selected from suggestions', 'error');
             document.getElementById('error-personname').textContent = 'Person name must be selected from suggestions';
             return;
         }
-
+ 
         const changedData = {};
         const fields = ['firstname', 'lastname', 'gender', 'contactnumber', 'email', 'date', 'time', 'nationalid', 'visit', 'personname', 'personnameid', 'department', 'durationtime', 'durationunit', 'visitortype', 'vehicletype', 'vehiclenumber', 'drivername', 'drivermobile', 'drivernationalid', 'notes'];
         fields.forEach(field => {
@@ -831,23 +831,23 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
                 changedData[key] = currentValue;
             }
         });
-
+ 
         const photoFile = document.getElementById('edit-photo')?.files[0];
         const driverPhotoFile = document.getElementById('edit-driverphoto')?.files[0];
         if (photoFile) changedData.photo = photoFile;
         if (driverPhotoFile) changedData.driverphoto = driverPhotoFile;
-
+ 
         if (Object.keys(changedData).length === 0) {
             showMessage('No changes detected', 'info');
             return;
         }
-
+ 
         const hasDriverDetails = ['drivername', 'drivermobile', 'drivernationalid'].some(field => changedData[field] || originalVisitorData[field]);
         if (hasDriverDetails && !changedData.driverphoto && !originalVisitorData.driverphoto) {
             showMessage('Driver photo is required', 'error');
             return;
         }
-
+ 
         let body = new FormData();
         Object.entries(changedData).forEach(([key, value]) => {
             if (key === 'photo' || key === 'driverphoto') {
@@ -856,7 +856,7 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
                 body.append(key, value || '');
             }
         });
-
+ 
         // Always include personname and personnameid
         const personnameInput = document.getElementById('edit-personname');
         const personnameidInput = document.getElementById('edit-personnameid');
@@ -864,19 +864,20 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
             body.set('personname', personnameInput.value);
             body.set('personnameid', personnameidInput.value);
         }
-
-        console.log('📤 Submitting FormData:Data');
+ 
+        console.log('📤 Submitting FormData:');
         for (const [key, value] of body.entries()) {
             console.log(`${key}: ${value instanceof File ? value.name : value}`);
         }
-
-        async function attemptUpdate(attempt = 1, maxAttempts = 3) {
+ 
+        // Background update function
+        async function backgroundUpdate() {
             const submitBtn = document.querySelector('#save-details');
             if (!submitBtn) {
                 showMessage('Save button not found', 'error');
                 return false;
             }
-
+ 
             submitBtn.disabled = true;
             submitBtn.innerHTML = `
                 <svg style="width: 20px; height: 20px; color: #4361ee; display: inline-block; margin-right: 8px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -885,6 +886,9 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
                 </svg>
                 Saving...
             `;
+ 
+            let attempt = 1;
+            const maxAttempts = 3;
             try {
                 const response = await fetch(`https://192.168.3.73:3001/appointment/${visitorId}`, {
                     method: 'PUT',
@@ -895,33 +899,35 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
                     throw new Error(errorData.message || 'Update failed');
                 }
                 await response.json();
-                document.getElementById('visitorModal').style.display = 'none';
-                originalVisitorData = null;
                 await loadVisitorData();
-                showMessage('Appointment Details saved successfully!', 'success');
-
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Save Details'; // Restore original button text
-                return true;
+                console.log('Background update completed successfully');
             } catch (error) {
                 console.error(`Attempt ${attempt} failed:`, error);
                 if (attempt < maxAttempts) {
                     await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
-                    return attemptUpdate(attempt + 1, maxAttempts);
-                } else {
-                    showMessage(`Failed to update visitor: ${error.message}`, 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Save Details'; // Restore original button text
-                    return false;
+                    attempt++;
                 }
+                showMessage(`Failed to update visitor: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Save Details';
             }
         }
-        await attemptUpdate();
+ 
+        // Close modal and show success message immediately
+        document.getElementById('visitorModal').style.display = 'none';
+        originalVisitorData = null;
+        showMessage('Appointment Details submitted for saving!', 'success');
+ 
+        // Trigger background update without awaiting
+        backgroundUpdate();
+ 
     } catch (error) {
-        console.error('Error submitting form:', error);
+        console.error('Error preparing form submission:', error);
         showMessage('An error occurred during submission', 'error');
     }
 });
+ 
 
 // Close modal
 function closeVisitorModal() {
