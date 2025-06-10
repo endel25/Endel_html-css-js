@@ -963,19 +963,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 step.classList.remove('active', 'red');
                 const stepType = step.dataset.step;
 
-                const shouldHighlight =
-                    (status === 'pending' && stepType === 'pending') ||
-                    (status === 'incampus' && (stepType === 'pending' || stepType === 'incampus')) ||
-                    (status === 'complete' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete')) ||
-                    (status === 'exit' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete' || stepType === 'exit'));
+                if (isDisapproved) {
+                    // When disapproved, make all steps red
+                    step.classList.add('red');
+                } else {
+                    const shouldHighlight =
+                        (status === 'pending' && stepType === 'pending') ||
+                        (status === 'incampus' && (stepType === 'pending' || stepType === 'incampus')) ||
+                        (status === 'complete' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete')) ||
+                        (status === 'exit' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete' || stepType === 'exit'));
 
-                if (shouldHighlight) {
-                    if (isDisapproved) {
-                        step.classList.add('red');
-                    } else if (isExited && stepType === 'exit') {
-                        step.classList.add('red');
-                    } else {
-                        step.classList.add('active');
+                    if (shouldHighlight) {
+                        if (isExited && stepType === 'exit') {
+                            step.classList.add('red');
+                        } else {
+                            step.classList.add('active');
+                        }
                     }
                 }
             });
