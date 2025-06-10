@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error checking contactnumber:', error.message);
-            showMessage(`Failed to fetch master record: ${error.message}`, 'error');
+            // showMessage(`Failed to fetch master record: ${error.message}`, 'error');
         }
     }
 

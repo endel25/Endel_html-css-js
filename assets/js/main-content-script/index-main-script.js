@@ -839,43 +839,47 @@ document.addEventListener('alpine:init', () => {
                 const today = new Date();
                 let startDate, endDate;
 
-                switch (this.timeRange) {
-                    case 'today':
-                        startDate = today.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate;
-                        break;
-                    case 'tomorrow':
-                        const tomorrow = new Date(today);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        startDate = tomorrow.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate;
-                        break;
-                    case 'previous':
-                        const yesterday = new Date(today);
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        startDate = yesterday.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate;
-                        break;
-                    case 'month':
-                        startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
-                        endDate = today.toISOString().split('T')[0];
-                        break;
-                    case 'year':
-                        startDate = `${today.getFullYear()}-01-01`;
-                        endDate = today.toISOString().split('T')[0];
-                        break;
-                    case 'custom':
-                        startDate = this.selectedDate;
-                        endDate = this.selectedDate;
-                        break;
-                    default:
-                        startDate = today.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate;
-                }
+switch (this.timeRange) {
+    case 'today':
+        startDate = today.toISOString().split('T')[0];
+        endDate = startDate;
+        this.selectedDate = startDate;
+        break;
+    case 'tomorrow':
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        startDate = tomorrow.toISOString().split('T')[0];
+        endDate = startDate;
+        this.selectedDate = startDate;
+        break;
+    case 'previous':
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        startDate = yesterday.toISOString().split('T')[0];
+        endDate = startDate;
+        this.selectedDate = startDate;
+        break;
+    case 'month':
+        startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+        // Set endDate to the last day of the current month
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endDate = lastDayOfMonth.toISOString().split('T')[0];
+        break;
+    case 'year':
+        startDate = `${today.getFullYear()}-01-01`;
+        // Set endDate to the last day of the current year
+        const lastDayOfYear = new Date(today.getFullYear(), 12, 0);
+        endDate = lastDayOfYear.toISOString().split('T')[0];
+        break;
+    case 'custom':
+        startDate = this.selectedDate;
+        endDate = this.selectedDate;
+        break;
+    default:
+        startDate = today.toISOString().split('T')[0];
+        endDate = startDate;
+        this.selectedDate = startDate;
+}
 
                 const normalizeData = (item, recordType) => {
                     let hostName = 'Unknown';

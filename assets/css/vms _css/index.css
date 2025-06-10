@@ -249,14 +249,20 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0 auto;
     transition: all 0.3s ease;
 }
 
+.step.gap-after {
+    margin-right: 50px; /* Adjust this value to control the spacing */
+}
+
+.step.gap-after1 {
+    margin-right: 80px; /* Adjust this value to control the spacing */
+}
+
 .step-icon {
-    width: 16px;
-    height: 16px;
-    color: #9e9e9e;
-    transition: all 0.3s ease;
+    color: #999;
 }
 
 .step-label {
@@ -275,11 +281,12 @@ img {
     height: 3px;
     background-color: #e0e0e0;
     z-index: 0;
-    margin: 0 25px;
+    margin: 0 25px; /* Optional: adds horizontal padding from both ends */
 }
 
+/* Active/Completed Step Styles (Green) */
 .step.active .step-circle {
-    border-color: #22c55e;
+    border-color: #22c55e; /* Green color */
     background-color: #22c55e;
 }
 
@@ -291,8 +298,9 @@ img {
     color: #22c55e;
 }
 
+/* Red Step Styles (for Disapproved or Exited) */
 .step.red .step-circle {
-    border-color: #ef4444;
+    border-color: #ef4444; /* Red color */
     background-color: #ef4444;
 }
 
@@ -306,8 +314,8 @@ img {
 
 /* Dark mode styling */
 .dark .step-circle {
-    background-color: #374151;
-    border-color: #6b7280;
+    background-color: #374151; /* Tailwind gray-700 */
+    border-color: #6b7280; /* Tailwind gray-500 */
 }
 
 .dark .step-icon {
@@ -323,7 +331,7 @@ img {
 }
 
 .dark .step.active .step-circle {
-    border-color: #4ade80;
+    border-color: #4ade80; /* Brighter green for dark mode */
     background-color: #4ade80;
 }
 
@@ -332,7 +340,7 @@ img {
 }
 
 .dark .step.red .step-circle {
-    border-color: #f87171;
+    border-color: #f87171; /* Brighter red for dark mode */
     background-color: #f87171;
 }
 
