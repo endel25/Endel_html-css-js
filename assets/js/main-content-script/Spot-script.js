@@ -1,5 +1,5 @@
 // Base URL for the backend API
-const API_BASE_URL = 'https://192.168.1.57:3001';
+const API_BASE_URL = 'https://192.168.3.73:3001';
 
 let currentFileInputId = '';
 let isPersonNameValid = false; // Flag to track if personname is valid
@@ -488,7 +488,7 @@ const photoInput = form.elements['photo'];
 
 if (photoInput && visitor.photo !== undefined) {
     const photoFilename = visitor.photo.split(/[\\/]/).pop(); // Extract just the filename
-    const photoUrl = `https://192.168.1.57:3001/uploads/${encodeURIComponent(photoFilename)}?t=${new Date().getTime()}`;
+    const photoUrl = `https://192.168.3.73:3001/uploads/${encodeURIComponent(photoFilename)}?t=${new Date().getTime()}`;
 
     if (mainPreview) {
         mainPreview.src = photoUrl;
@@ -566,7 +566,7 @@ async function fetchPersonNameSuggestions(query) {
 
     try {
         const response = await fetch(
-            `https://192.168.1.57:3001/users/search?query=${encodeURIComponent(
+            `https://192.168.3.73:3001/users/search?query=${encodeURIComponent(
                 query
             )}`,
             {
@@ -898,7 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Initiate the fetch request and redirect immediately
-            fetch('https://192.168.1.57:3001/visitors', {
+            fetch('https://192.168.3.73:3001/visitors', {
                 method: 'POST',
                 body: formData,
             })

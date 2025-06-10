@@ -54,11 +54,11 @@ async function fetchApprovedVisitors() {
     try {
         console.log('Fetching approved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -110,11 +110,11 @@ async function fetchDisapprovedVisitors() {
     try {
         console.log('Fetching disapproved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -166,11 +166,11 @@ async function fetchExitVisitors() {
     try {
         console.log('Fetching exit visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -222,11 +222,11 @@ async function fetchVisitors() {
     try {
         console.log('Fetching all visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -282,11 +282,11 @@ async function fetchPassTypes() {
     try {
         console.log('Fetching pass types...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -479,11 +479,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 console.log('Fetching upcoming appointments...');
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     }),
-                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
@@ -581,11 +581,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 console.log('Fetching today\'s visitors...');
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     }),
-                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
@@ -794,7 +794,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 if (status) {
-                    const response = await fetch(`https://192.168.1.57:3001/${endpoint}/${visitorId}/status/${status}`, {
+                    const response = await fetch(`https://192.168.3.73:3001/${endpoint}/${visitorId}/status/${status}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body)
@@ -818,11 +818,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 this.loading = true;
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     }),
-                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
