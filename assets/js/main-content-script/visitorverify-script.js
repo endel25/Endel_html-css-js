@@ -161,7 +161,7 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
 
     try {
         const response = await fetch(
-            `https://192.168.1.82:3001/users/search?query=${encodeURIComponent(query)}`,
+            `https://192.168.1.57:3001/users/search?query=${encodeURIComponent(query)}`,
             {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -211,6 +211,7 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
                 div.addEventListener('click', () => {
                     personnameInput.value = `${displayName} (${user.department || 'N/A'} & ${user.designation || 'N/A'})`;
                     document.getElementById('department').value = user.department || '';
+                    document.getElementById('personnameid').value = user.id || '';
                     suggestionsContainer.classList.add('hidden');
                     isPersonNameValid = true;
                     errorElement.textContent = '';
@@ -270,7 +271,7 @@ const validateField = (name, value, formData = {}) => {
     let error = '';
     const requiredFields = [
         'firstname', 'lastname', 'gender', 'contactnumber', 'email',
-        'date', 'time', 'nationalid', 'photo', 'visit', 'personname',
+        'date', 'time', 'nationalid', 'photo', 'visit', 'personname', 'personnameid',
         'department', 'durationtime', 'visitortype'
     ];
     if (requiredFields.includes(name) && !value && name !== 'photo') {
@@ -283,6 +284,11 @@ const validateField = (name, value, formData = {}) => {
         case 'lastname':
             if (value && !/^[a-zA-Z\s]{2,}$/.test(value)) {
                 error = `${name === 'firstname' ? 'First' : 'Last'} name must be at least 2 characters and contain only letters`;
+            }
+            break;
+        case 'personnameid':
+            if (!value) {
+                error = 'Please select a valid person from suggestions';
             }
             break;
         case 'personname':
@@ -392,7 +398,7 @@ function populateDropdown(selectId, data, valueKey = 'name') {
 
 async function fetchPurposeOfVisits() {
     try {
-        const response = await fetch('https://192.168.1.82:3001/purpose-of-visit');
+        const response = await fetch('https://192.168.1.57:3001/purpose-of-visit');
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
         }
@@ -409,7 +415,7 @@ async function fetchPurposeOfVisits() {
 
 async function fetchTimeUnits() {
     try {
-        const response = await fetch('https://192.168.1.82:3001/time-duration-unit');
+        const response = await fetch('https://192.168.1.57:3001/time-duration-unit');
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
         }
@@ -426,7 +432,7 @@ async function fetchTimeUnits() {
 
 async function fetchVisitorTypes() {
     try {
-        const response = await fetch('https://192.168.1.82:3001/visitor-type');
+        const response = await fetch('https://192.168.1.57:3001/visitor-type');
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
         }
@@ -444,7 +450,7 @@ async function fetchVisitorTypes() {
 async function checkFormStatus(email, date, time) {
     try {
         const response = await fetch(
-            `https://192.168.1.82:3001/appointment/check-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
+            `https://192.168.1.57:3001/appointment/check-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
             {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
@@ -725,6 +731,12 @@ async function initializeForm() {
             }
         });
 
+        // Ensure personnameid is included
+        const personnameid = document.getElementById('personnameid')?.value;
+        if (personnameid) {
+            formattedData.append('personnameid', personnameid);
+        }
+
         fields.forEach(field => {
             const input = document.getElementById(field);
             if (input) formattedData.append(field, input.value || '');
@@ -741,7 +753,7 @@ async function initializeForm() {
         }
 
         try {
-            const response = await fetch('https://192.168.1.82:3001/appointment/create', {
+            const response = await fetch('https://192.168.1.57:3001/appointment/create', {
                 method: 'POST',
                 body: formattedData
             });

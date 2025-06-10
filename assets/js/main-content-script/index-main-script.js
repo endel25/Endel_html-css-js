@@ -54,11 +54,11 @@ async function fetchApprovedVisitors() {
     try {
         console.log('Fetching approved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -74,7 +74,7 @@ async function fetchApprovedVisitors() {
         const appointmentData = await appointmentResponse.json();
         const visitorData = await visitorResponse.json();
 
-        approvedVisitors = [
+        const combinedData = [
             ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                 .filter(visitor => visitor.isApproved === true)
                 .map(visitor => ({
@@ -92,6 +92,9 @@ async function fetchApprovedVisitors() {
                     durationunit: visitor.durationunit || visitor.durationUnit || ''
                 }))
         ];
+
+        // Filter the combined data based on user role
+        approvedVisitors = filterVisitorsByUserRole(combinedData);
 
         localStorage.setItem('approvedVisitors', JSON.stringify(approvedVisitors));
         updateApprovedCard();
@@ -107,11 +110,11 @@ async function fetchDisapprovedVisitors() {
     try {
         console.log('Fetching disapproved visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -127,7 +130,7 @@ async function fetchDisapprovedVisitors() {
         const appointmentData = await appointmentResponse.json();
         const visitorData = await visitorResponse.json();
 
-        disapprovedVisitors = [
+        const combinedData = [
             ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                 .filter(visitor => visitor.isApproved === false)
                 .map(visitor => ({
@@ -145,6 +148,9 @@ async function fetchDisapprovedVisitors() {
                     durationunit: visitor.durationunit || visitor.durationUnit || ''
                 }))
         ];
+
+        // Filter the combined data based on user role
+        disapprovedVisitors = filterVisitorsByUserRole(combinedData);
 
         localStorage.setItem('disapprovedVisitors', JSON.stringify(disapprovedVisitors));
         updateDisapprovedCard();
@@ -160,11 +166,11 @@ async function fetchExitVisitors() {
     try {
         console.log('Fetching exit visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -180,7 +186,7 @@ async function fetchExitVisitors() {
         const appointmentData = await appointmentResponse.json();
         const visitorData = await visitorResponse.json();
 
-        exitVisitors = [
+        const combinedData = [
             ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                 .filter(visitor => visitor.exit === true)
                 .map(visitor => ({
@@ -198,6 +204,9 @@ async function fetchExitVisitors() {
                     durationunit: visitor.durationunit || visitor.durationUnit || ''
                 }))
         ];
+
+        // Filter the combined data based on user role
+        exitVisitors = filterVisitorsByUserRole(combinedData);
 
         localStorage.setItem('exitVisitors', JSON.stringify(exitVisitors));
         updateExitCard();
@@ -213,11 +222,11 @@ async function fetchVisitors() {
     try {
         console.log('Fetching all visitors...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -233,7 +242,7 @@ async function fetchVisitors() {
         const appointmentData = await appointmentResponse.json();
         const visitorData = await visitorResponse.json();
 
-        allVisitors = [
+        const combinedData = [
             ...(Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                 .map(visitor => ({
                     ...visitor,
@@ -250,6 +259,9 @@ async function fetchVisitors() {
                 }))
         ];
 
+        // Filter the combined data based on user role
+        allVisitors = filterVisitorsByUserRole(combinedData);
+
         if (allVisitors.length === 0) {
             console.warn('No visitors fetched from the server');
         }
@@ -257,7 +269,7 @@ async function fetchVisitors() {
         localStorage.setItem('allVisitors', JSON.stringify(allVisitors));
         updateCard();
     } catch (error) {
-        console.error('Failed to fetch visitors:', error.message);
+        console.error('Failed to fetch all visitors:', error.message);
         allVisitors = JSON.parse(localStorage.getItem('allVisitors') || '[]');
         if (allVisitors.length === 0) {
             console.warn('No cached visitors available either');
@@ -270,11 +282,11 @@ async function fetchPassTypes() {
     try {
         console.log('Fetching pass types...');
         const [appointmentResponse, visitorResponse] = await Promise.all([
-            fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+            fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -392,6 +404,54 @@ function updateCard() {
     }
 }
 
+// Function to filter visitors based on user role and personnameid
+function filterVisitorsByUserRole(visitors) {
+    const userRole = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+
+    console.log('Filtering visitors with:', {
+        userRole,
+        userId,
+        username,
+        totalVisitors: visitors.length
+    });
+
+    // If user is superadmin, admin, or security, show all entries
+    if (userRole === 'superadmin' || userRole === 'admin' || userRole === 'security') {
+        console.log('User has privileged role, showing all entries');
+        return visitors;
+    }
+
+    // For other users, show only entries where personnameid matches their ID or personname matches their username
+    const filteredVisitors = visitors.filter(visitor => {
+        // Convert both IDs to strings for comparison to handle both string and number types
+        const visitorPersonnameId = String(visitor.personnameid);
+        const userPersonnameId = String(userId);
+        
+        const matches = visitorPersonnameId === userPersonnameId || visitor.personname === username;
+        
+        console.log('Checking visitor:', {
+            visitorId: visitor.id,
+            visitorPersonnameId,
+            userPersonnameId,
+            visitorPersonname: visitor.personname,
+            username,
+            matches
+        });
+        
+        return matches;
+    });
+
+    console.log('Filtered visitors:', {
+        before: visitors.length,
+        after: filteredVisitors.length,
+        filteredVisitors
+    });
+
+    return filteredVisitors;
+}
+
 // Alpine.js data components
 document.addEventListener('alpine:init', () => {
     // Upcoming Appointments
@@ -419,11 +479,11 @@ document.addEventListener('alpine:init', () => {
             try {
                 console.log('Fetching upcoming appointments...');
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     }),
-                    fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
@@ -468,7 +528,8 @@ document.addEventListener('alpine:init', () => {
                         designation,
                         purpose: item.visit || 'N/A',
                         nationalId: item.nationalid || 'N/A',
-                        typeOfPass
+                        typeOfPass,
+                        personnameid: item.personnameid // Add personnameid to the normalized data
                     };
                 };
 
@@ -480,8 +541,11 @@ document.addEventListener('alpine:init', () => {
                     .filter(item => item.date && item.date >= today)
                     .map((item, index) => normalizeData(item, 'spot', index));
 
-                this.appointmentsList = [...processedAppointmentData, ...processedVisitorData]
-                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+                // Combine and filter the data based on user role
+                const combinedData = [...processedAppointmentData, ...processedVisitorData];
+                const filteredData = filterVisitorsByUserRole(combinedData);
+
+                this.appointmentsList = filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
                 console.log('Mapped Upcoming Appointments List:', JSON.stringify(this.appointmentsList, null, 2));
             } catch (error) {
@@ -497,8 +561,14 @@ document.addEventListener('alpine:init', () => {
         visitorsList: [],
         searchQuery: '',
 
+        init() {
+            this.fetchTodaysVisitors();
+        },
+
         get filteredVisitors() {
+            if (!this.visitorsList) return [];
             if (!this.searchQuery) return this.visitorsList;
+            
             const query = this.searchQuery.toLowerCase();
             return this.visitorsList.filter(item =>
                 Object.values(item).some(val =>
@@ -509,9 +579,16 @@ document.addEventListener('alpine:init', () => {
 
         async fetchTodaysVisitors() {
             try {
+                console.log('Fetching today\'s visitors...');
                 const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch('https://192.168.1.82:3001/appointment'),
-                    fetch('https://192.168.1.82:3001/visitors')
+                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
                 ]);
 
                 if (!appointmentResponse.ok) {
@@ -523,7 +600,12 @@ document.addEventListener('alpine:init', () => {
 
                 const appointmentData = await appointmentResponse.json();
                 const visitorData = await visitorResponse.json();
+
+                console.log('Raw appointment data:', appointmentData);
+                console.log('Raw visitor data:', visitorData);
+
                 const today = new Date().toISOString().split('T')[0];
+                console.log('Today\'s date:', today);
 
                 const normalizeData = (item, recordType) => {
                     let hostName = 'Unknown';
@@ -542,7 +624,7 @@ document.addEventListener('alpine:init', () => {
                     }
 
                     return {
-                        id: item.id,
+                        id: `${recordType}-${item.id}-${Date.now()}`,
                         firstName: item.firstname || 'Unknown',
                         lastName: item.lastname || 'Unknown',
                         date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
@@ -554,7 +636,8 @@ document.addEventListener('alpine:init', () => {
                         nationalId: item.nationalid || 'N/A',
                         pendingApproval: item.isApproved ?? true,
                         typeOfPass: recordType,
-                        recordType
+                        recordType,
+                        personnameid: item.personnameid
                     };
                 };
 
@@ -566,34 +649,26 @@ document.addEventListener('alpine:init', () => {
                     .filter(item => item.date === today)
                     .map(item => normalizeData(item, 'spot'));
 
-                this.visitorsList = [...processedAppointmentData, ...processedVisitorData];
-                console.log('Mapped Today\'s Visitor List:', JSON.stringify(this.visitorsList, null, 2));
+                console.log('Processed appointment data:', processedAppointmentData);
+                console.log('Processed visitor data:', processedVisitorData);
+
+                // Combine and filter the data based on user role
+                const combinedData = [...processedAppointmentData, ...processedVisitorData];
+                console.log('Combined data before filtering:', combinedData);
+                
+                const filteredData = filterVisitorsByUserRole(combinedData);
+                console.log('Filtered data:', filteredData);
+
+                this.visitorsList = filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                console.log('Final visitors list:', this.visitorsList);
             } catch (error) {
-                console.error("Error fetching today's visitors:", error);
-                this.showMessage("Failed to load today's visitors.", 'error');
+                console.error('Error fetching today\'s visitors:', error);
+                this.visitorsList = [];
+                this.showMessage('Failed to load today\'s visitors. Please try again later.', 'error');
             }
         },
 
-        async toggleApproval(id, currentStatus, recordType) {
-            try {
-                const status = currentStatus ? 'disapprove' : 'approve';
-                const endpoint = recordType === 'preapproval' ? 'appointment' : 'visitors';
-                const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${id}/status/${status}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                this.showMessage(`Visitor ${status}d successfully.`);
-                await this.fetchTodaysVisitors();
-            } catch (error) {
-                console.error('Error toggling approval status:', error);
-                this.showMessage('Failed to toggle approval status.', 'error');
-            }
-        },
-
-        showMessage(msg = '', type = 'success') {
+        showMessage(msg, type = 'success') {
             const toast = window.Swal.mixin({
                 toast: true,
                 position: 'top',
@@ -610,15 +685,32 @@ document.addEventListener('alpine:init', () => {
 
     // Visitor Details
     Alpine.data('visitorDetails', () => ({
-        visitorsList: [],
+        visitors: [],
+        loading: true,
+        error: null,
         searchQuery: '',
-        selectedDate: new Date().toISOString().split('T')[0], // Default to today
-        timeRange: 'today', // Default to today
+        timeRange: 'today',
+        selectedDate: new Date().toISOString().split('T')[0],
+        sortField: 'date',
+        sortDirection: 'desc',
+        currentPage: 1,
+        itemsPerPage: 10,
+        totalPages: 1,
+        permissions: getPermissions(),
 
-        filteredVisitors() {
-            if (!this.searchQuery) return this.visitorsList;
+        init() {
+            this.fetchVisitorDetails();
+            document.addEventListener('visitorStatusUpdated', () => {
+                this.fetchVisitorDetails();
+            });
+        },
+
+        get filteredVisitors() {
+            if (!this.visitors) return [];
+            if (!this.searchQuery) return this.visitors;
+            
             const query = this.searchQuery.toLowerCase();
-            return this.visitorsList.filter(item =>
+            return this.visitors.filter(item =>
                 Object.values(item).some(val =>
                     val?.toString().toLowerCase().includes(query)
                 )
@@ -626,228 +718,10 @@ document.addEventListener('alpine:init', () => {
         },
 
         getVisitorStatus(visitor) {
+            if (!visitor.isApproved) return 'pending';
             if (visitor.exitApproval) return 'exit';
-            if (visitor.complete) return 'complete';
-            if (visitor.inCampus) return 'incampus';
-            if (visitor.pendingApproval) return 'pending';
-            return '';
-        },
-
-        async fetchVisitorDetails() {
-            try {
-                const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.1.82:3001/appointment?t=${new Date().getTime()}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    }),
-                    fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                ]);
-
-                if (!appointmentResponse.ok) {
-                    throw new Error(`HTTP error! Status: ${appointmentResponse.status}`);
-                }
-                if (!visitorResponse.ok) {
-                    throw new Error(`HTTP error! Status: ${visitorResponse.status}`);
-                }
-
-                const appointmentData = await appointmentResponse.json();
-                const visitorData = await visitorResponse.json();
-                console.log('API Response for Visitor Details:', JSON.stringify({ appointmentData, visitorData }, null, 2));
-
-                // Date filtering logic based on timeRange
-                const today = new Date();
-                let startDate, endDate;
-
-                switch (this.timeRange) {
-                    case 'today':
-                        startDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
-                        endDate = startDate;
-                        this.selectedDate = startDate; // Sync date picker
-                        break;
-                    case 'tomorrow':
-                        const tomorrow = new Date(today);
-                        tomorrow.setDate(today.getDate() + 1);
-                        startDate = tomorrow.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate; // Sync date picker
-                        break;
-                    case 'previous':
-                        const previous = new Date(today);
-                        previous.setDate(today.getDate() - 1);
-                        startDate = previous.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate; // Sync date picker
-                        break;
-                    case 'month': // This Month
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        startDate = firstDayOfMonth.toISOString().split('T')[0];
-        endDate = lastDayOfMonth.toISOString().split('T')[0];
-        this.selectedDate = startDate; // Sync with date picker
-        break;
-    case 'year': // This Year
-        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
-        const lastDayOfYear = new Date(today.getFullYear(), 11, 31);
-        startDate = firstDayOfYear.toISOString().split('T')[0];
-        endDate = lastDayOfYear.toISOString().split('T')[0];
-        this.selectedDate = startDate; // Sync with date picker
-        break;
-                    case 'custom':
-                        startDate = this.selectedDate;
-                        endDate = this.selectedDate;
-                        break;
-                    default:
-                        startDate = today.toISOString().split('T')[0];
-                        endDate = startDate;
-                        this.selectedDate = startDate;
-                }
-
-                console.log(`Filtering for time range: ${this.timeRange}, startDate: ${startDate}, endDate: ${endDate}`);
-
-                const normalizeData = (item, recordType) => {
-                    let hostName = 'Unknown';
-                    let department = 'N/A';
-                    let designation = 'N/A';
-
-                    if (item.personname) {
-                        const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
-                        if (match) {
-                            hostName = match[1].trim();
-                            department = match[2].trim();
-                            designation = match[3].trim();
-                        } else {
-                            hostName = item.personname;
-                        }
-                    }
-
-                    let exitDateToUse = item.exitDate || localStorage.getItem(`exitDate_${item.id}`) || item.date;
-                    if (exitDateToUse?.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                        const [year, month, day] = exitDateToUse.split('-').map(Number);
-                        exitDateToUse = `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}-${year}`;
-                    }
-
-                    if (!exitDateToUse?.match(/^\d{2}-\d{2}-\d{4}$/)) {
-                        console.warn(`Invalid exitDate format for visitor ID ${item.id}. Fallback used.`);
-                        exitDateToUse = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
-                    }
-
-                    return {
-                        id: item.id,
-                        firstName: item.firstname || 'Unknown',
-                        lastName: item.lastname || 'Unknown',
-                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
-                        allocatedTime: item.time || 'N/A',
-                        contactnumber: item.contactnumber || 'N/A',
-                        host: hostName,
-                        department,
-                        designation,
-                        purpose: item.visit || 'N/A',
-                        nationalId: item.nationalid || 'N/A',
-                        pendingApproval: true,
-                        inCampus: (item.isApproved ?? true) ? true : (item.inprogress ?? false),
-                        complete: item.complete ?? false,
-                        exitApproval: item.exit ?? false,
-                        exitDate: exitDateToUse,
-                        isApproved: item.isApproved ?? true,
-                        typeOfPass: recordType,
-                        recordType
-                    };
-                };
-
-                const filterByDateRange = (item) => {
-                    if (!item.date) return false;
-                    return item.date >= startDate && item.date <= endDate;
-                };
-
-                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
-                    .filter(filterByDateRange)
-                    .map(item => normalizeData(item, 'preapproval'));
-
-                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
-                    .filter(filterByDateRange)
-                    .map(item => normalizeData(item, 'spot'));
-
-                const apiData = [...processedAppointmentData, ...processedVisitorData]
-                    .filter(item => {
-                        if (item.exitApproval && item.exitDate) {
-                            const [exitDay, exitMonth, exitYear] = item.exitDate.split('-').map(Number);
-                            const exitDate = new Date(Date.UTC(exitYear + 1, exitMonth, exitDay));
-                            const endFilterDate = new Date(Date.UTC(
-                                parseInt(endDate.split('-')[0]),
-                                parseInt(endDate.split('-')[1]) - 1,
-                                parseInt(endDate.split('-')[2])
-                            ));
-                            return exitDate >= endFilterDate;
-                        }
-                        return true;
-                    });
-
-                this.visitorsList = apiData;
-                console.log('Mapped Visitor List:', JSON.stringify(this.visitorsList, null, 2));
-            } catch (error) {
-                console.error('Error fetching visitor details:', error);
-                this.showMessage('Failed to load visitor details.', 'error');
-            }
-        },
-
-        async updateVisitor(visitor) {
-            try {
-                let status = '';
-                let body = {};
-                const endpoint = visitor.recordType === 'preapproval' ? 'appointment' : 'visitors';
-
-                if (visitor.inCampus) {
-                    status = 'inprogress';
-                    body = { inprogress: true };
-                } else if (visitor.complete) {
-                    status = 'complete';
-                    body = { complete: true };
-                } else if (visitor.exitApproval) {
-                    status = 'exit';
-                    const today = new Date();
-                    const day = String(today.getDate()).padStart(2, '0');
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const year = today.getFullYear();
-                    const exitDateStr = `${day}-${month}-${year}`;
-                    body = { exit: true, exitDate: exitDateStr };
-                    localStorage.setItem(`exitDate_${visitor.id}`, exitDateStr);
-                }
-
-                if (status) {
-                    const response = await fetch(`https://192.168.1.82:3001/${endpoint}/${visitor.id}/status/${status}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    this.showMessage('Visitor status updated successfully.');
-                    await this.fetchVisitorDetails();
-                } else {
-                    throw new Error('No status change detected.');
-                }
-            } catch (error) {
-                console.error('Error updating visitor status:', error);
-                this.showMessage('Failed to update visitor status.', 'error');
-            }
-        },
-
-        showMessage(msg = '', type = 'success') {
-            const toast = window.Swal.mixin({
-                toast: true,
-                position: 'top',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            toast.fire({
-                icon: type,
-                title: msg,
-                padding: '10px 20px'
-            });
+            if (visitor.isApproved && !visitor.exitApproval) return 'incampus';
+            return 'complete';
         },
 
         renderProgressSteps(visitor) {
@@ -891,6 +765,187 @@ document.addEventListener('alpine:init', () => {
                     </div>
                 </div>
             `;
+        },
+
+        async updateVisitor(visitor, field) {
+            try {
+                const visitorId = visitor.id;
+                const endpoint = visitor.recordType === 'preapproval' ? 'appointment' : 'visitors';
+                let status = null;
+                let body = {};
+
+                switch (field) {
+                    case 'approve':
+                        status = 'approve';
+                        body = { isApproved: true, complete: false };
+                        break;
+                    case 'disapprove':
+                        status = 'disapprove';
+                        body = { isApproved: false, complete: false };
+                        break;
+                    case 'complete':
+                        status = 'complete';
+                        body = { complete: true };
+                        break;
+                    case 'exit':
+                        status = 'exit';
+                        body = { exitApproval: true };
+                        break;
+                }
+
+                if (status) {
+                    const response = await fetch(`https://192.168.1.57:3001/${endpoint}/${visitorId}/status/${status}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    this.showMessage(`Visitor status updated successfully.`);
+                    document.dispatchEvent(new CustomEvent('visitorStatusUpdated'));
+                    await this.fetchVisitorDetails();
+                } else {
+                    throw new Error('No status change detected.');
+                }
+            } catch (error) {
+                console.error('Error updating visitor status:', error);
+                this.showMessage('Failed to update visitor status.', 'error');
+            }
+        },
+
+        async fetchVisitorDetails() {
+            try {
+                this.loading = true;
+                const [appointmentResponse, visitorResponse] = await Promise.all([
+                    fetch(`https://192.168.1.57:3001/appointment?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    }),
+                    fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                ]);
+
+                if (!appointmentResponse.ok || !visitorResponse.ok) {
+                    throw new Error('Failed to fetch visitor data');
+                }
+
+                const appointmentData = await appointmentResponse.json();
+                const visitorData = await visitorResponse.json();
+
+                // Date filtering logic based on timeRange
+                const today = new Date();
+                let startDate, endDate;
+
+                switch (this.timeRange) {
+                    case 'today':
+                        startDate = today.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate;
+                        break;
+                    case 'tomorrow':
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        startDate = tomorrow.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate;
+                        break;
+                    case 'previous':
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        startDate = yesterday.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate;
+                        break;
+                    case 'month':
+                        startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+                        endDate = today.toISOString().split('T')[0];
+                        break;
+                    case 'year':
+                        startDate = `${today.getFullYear()}-01-01`;
+                        endDate = today.toISOString().split('T')[0];
+                        break;
+                    case 'custom':
+                        startDate = this.selectedDate;
+                        endDate = this.selectedDate;
+                        break;
+                    default:
+                        startDate = today.toISOString().split('T')[0];
+                        endDate = startDate;
+                        this.selectedDate = startDate;
+                }
+
+                const normalizeData = (item, recordType) => {
+                    let hostName = 'Unknown';
+                    let department = 'N/A';
+                    let designation = 'N/A';
+
+                    if (item.personname) {
+                        const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
+                        if (match) {
+                            hostName = match[1].trim();
+                            department = match[2].trim();
+                            designation = match[3].trim();
+                        } else {
+                            hostName = item.personname;
+                        }
+                    }
+
+                    return {
+                        id: item.id,
+                        firstName: item.firstname || 'Unknown',
+                        lastName: item.lastname || 'Unknown',
+                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
+                        allocatedTime: item.time || 'N/A',
+                        contactnumber: item.contactnumber || 'N/A',
+                        host: hostName,
+                        department,
+                        designation,
+                        purpose: item.visit || 'N/A',
+                        nationalId: item.nationalid || 'N/A',
+                        isApproved: item.isApproved ?? false,
+                        exitApproval: item.exit ?? false,
+                        complete: item.complete ?? false,
+                        typeOfPass: recordType,
+                        recordType
+                    };
+                };
+
+                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
+                    .filter(item => {
+                        const itemDate = item.date;
+                        return itemDate >= startDate && itemDate <= endDate;
+                    })
+                    .map(item => normalizeData(item, 'preapproval'));
+
+                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
+                    .filter(item => {
+                        const itemDate = item.date;
+                        return itemDate >= startDate && itemDate <= endDate;
+                    })
+                    .map(item => normalizeData(item, 'spot'));
+
+                const combinedData = [...processedAppointmentData, ...processedVisitorData];
+                const filteredData = filterVisitorsByUserRole(combinedData);
+                this.visitors = filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                console.log('Mapped Visitor List:', JSON.stringify(this.visitors, null, 2));
+            } catch (error) {
+                console.error('Error fetching visitor details:', error);
+                this.visitors = [];
+                this.showMessage('Failed to load visitor details. Please try again later.', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        showMessage(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
     }));
 });

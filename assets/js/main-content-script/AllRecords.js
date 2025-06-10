@@ -6,7 +6,7 @@ let searchQuery = '';
 // Original fetchAllRecords function (unchanged)
 async function fetchAllRecords() {
   try {
-    const response = await fetch('https://192.168.1.82:3001/master-records');
+    const response = await fetch('https://192.168.1.57:3001/master-records');
 
     const fetchedRecords = await response.json(); // Convert a json string to json object,array
 

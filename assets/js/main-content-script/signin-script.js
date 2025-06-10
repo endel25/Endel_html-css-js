@@ -53,7 +53,7 @@ document.addEventListener('alpine:init', () => {
             }
 
             try {
-                const response = await fetch('https://192.168.1.82:3001/auth/login', {
+                const response = await fetch('https://192.168.1.57:3001/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userName: this.userName, password: this.password }),
@@ -82,6 +82,7 @@ document.addEventListener('alpine:init', () => {
                     localStorage.setItem('role', user.role);
                     localStorage.setItem('permissions', JSON.stringify(user.permissions));
                     localStorage.setItem('userName', user.userName);
+                    localStorage.setItem('userId', user.id);
 
                     console.log('Login successful, redirecting to index.html');
                     window.location.href = 'index.html';

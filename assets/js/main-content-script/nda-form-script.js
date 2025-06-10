@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkFormStatus(email, date, time) {
         try {
             const response = await fetch(
-                `https://192.168.1.82:3001/appointment/nda-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
+                `https://192.168.1.57:3001/appointment/nda-status?email=${encodeURIComponent(email)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`,
                 {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('https://192.168.1.82:3001/appointment/nda', {
+                const response = await fetch('https://192.168.1.57:3001/appointment/nda', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -7,7 +7,7 @@ let searchQuery = '';
 let isPersonNameValid = false;
 
 // Base URL for the backend API
-const API_BASE_URL = 'https://192.168.1.82:3001';
+const API_BASE_URL = 'https://192.168.1.57:3001';
 
 // Function to get SpotEntry permissions from localStorage (aligned with reference script)
 function getPermissions() {
@@ -172,7 +172,7 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
 
     try {
         const response = await fetch(
-            `https://192.168.1.82:3001/users/search?query=${encodeURIComponent(query)}`,
+            `https://192.168.1.57:3001/users/search?query=${encodeURIComponent(query)}`,
             {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -225,8 +225,20 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
                     personnameInput.value = `${displayName} (${user.department || 'N/A'} & ${user.designation || 'N/A'})`;
                     suggestionsContainer.classList.add('hidden');
                     document.getElementById('edit-department').value = user.department || '';
+                    document.getElementById('edit-personnameid').value = user.id || '';
                     isPersonNameValid = true;
                     errorElement.textContent = '';
+                    
+                    // Update the original visitor data to reflect the change
+                    const visitorId = document.getElementById('edit-visitorId')?.value;
+                    if (visitorId) {
+                        const visitor = visitors.find(v => v.id === parseInt(visitorId));
+                        if (visitor) {
+                            visitor.personname = personnameInput.value;
+                            visitor.personnameid = user.id;
+                            visitor.department = user.department || '';
+                        }
+                    }
                 });
                 suggestionsContainer.appendChild(div);
             });
@@ -280,10 +292,45 @@ function attachPersonNameListeners() {
     }
 }
 
+// Function to filter visitors based on user role and personnameid
+function filterVisitorsByUserRole(visitors) {
+    const userRole = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId'); // Get user's ID from localStorage
+    
+    console.log('Filtering visitors - User Role:', userRole);
+    console.log('Filtering visitors - User ID:', userId);
+    console.log('All visitors before filtering:', visitors);
+    
+    // If user is superadmin, admin, or security, show all entries
+    if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
+        console.log('User is admin/security, showing all entries');
+        return visitors;
+    }
+    
+    // For other users, only show entries where personnameid matches their userId
+    const filteredVisitors = visitors.filter(visitor => {
+        // Convert both IDs to strings for comparison to handle both string and number types
+        const visitorPersonnameId = String(visitor.personnameid);
+        const userPersonnameId = String(userId);
+        
+        console.log('Comparing IDs:', {
+            visitorPersonnameId,
+            userPersonnameId,
+            visitor: visitor.personname,
+            matches: visitorPersonnameId === userPersonnameId
+        });
+        
+        return visitorPersonnameId === userPersonnameId;
+    });
+    
+    console.log('Filtered visitors:', filteredVisitors);
+    return filteredVisitors;
+}
+
 async function fetchVisitors() {
     try {
-        console.log('Fetching visitors from https://192.168.1.82:3001/visitors');
-        const response = await fetch(`https://192.168.1.82:3001/visitors?t=${new Date().getTime()}`, {
+        console.log('Fetching visitors from https://192.168.1.57:3001/visitors');
+        const response = await fetch(`https://192.168.1.57:3001/visitors?t=${new Date().getTime()}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
@@ -293,8 +340,13 @@ async function fetchVisitors() {
         }
 
         const data = await response.json();
-        console.log('Fetched visitors:', data);
-        visitors = data.map(visitor => ({
+        console.log('Raw data from server:', data);
+        
+        // Filter the visitors based on user role
+        const filteredVisitors = filterVisitorsByUserRole(data);
+        console.log('After filtering:', filteredVisitors);
+        
+        visitors = filteredVisitors.map(visitor => ({
             ...visitor,
             date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
             durationunit: visitor.durationunit || visitor.durationUnit || '',
@@ -302,7 +354,7 @@ async function fetchVisitors() {
 
         // Sort visitors by id in descending order
         visitors.sort((a, b) => b.id - a.id);
-        console.log('Visitors sorted by id in descending order:', visitors);
+        console.log('Final visitors array:', visitors);
 
         if (visitors.length === 0) {
             console.warn('No visitors fetched from the server');
@@ -568,7 +620,7 @@ function toggleDriverDetails() {
             document.getElementById('edit-drivernationalid').value = visitor.drivernationalid || '';
             const driverPreview = document.getElementById('driverPreview');
             if (visitor.driverphoto) {
-                const driverPhotoUrl = `https://192.168.1.82:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
+                const driverPhotoUrl = `https://192.168.1.57:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
                 driverPreview.src = '';
                 driverPreview.src = driverPhotoUrl;
                 driverPreview.style.display = 'block';
@@ -825,7 +877,7 @@ async function openEditModal(id) {
 
     const mainPreview = document.getElementById('mainPreview');
     if (visitor.photo) {
-        const photoUrl = `https://192.168.1.82:3001/uploads/${encodeURIComponent(visitor.photo)}?t=${new Date().getTime()}`;
+        const photoUrl = `https://192.168.1.57:3001/uploads/${encodeURIComponent(visitor.photo)}?t=${new Date().getTime()}`;
         console.log('Setting mainPreview URL:', photoUrl);
         mainPreview.src = '';
         mainPreview.src = photoUrl;
@@ -849,7 +901,7 @@ async function openEditModal(id) {
 
     const driverPreview = document.getElementById('driverPreview');
     if (visitor.driverphoto) {
-        const driverPhotoUrl = `https://192.168.1.82:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
+        const driverPhotoUrl = `https://192.168.1.57:3001/uploads/${encodeURIComponent(visitor.driverphoto)}?t=${new Date().getTime()}`;
         console.log('Setting driverPreview URL:', driverPhotoUrl);
         driverPreview.src = '';
         driverPreview.src = driverPhotoUrl;
@@ -1021,7 +1073,7 @@ async function updateVisitorStatus(visitorId, status) {
     }
 
     try {
-        const response = await fetch(`https://192.168.1.82:3001/visitors/${visitorId}/status/${status}?sendEmail=false`, {
+        const response = await fetch(`https://192.168.1.57:3001/visitors/${visitorId}/status/${status}?sendEmail=false`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -1057,7 +1109,7 @@ async function updateVisitorStatus(visitorId, status) {
 // Function to handle the background update process
 async function updateVisitorInBackground(updatedVisitor, apiFormData, originalVisitor) {
     try {
-        const response = await fetch(`https://192.168.1.82:3001/visitors/${updatedVisitor.id}`, {
+        const response = await fetch(`https://192.168.1.57:3001/visitors/${updatedVisitor.id}`, {
             method: 'PATCH',
             body: apiFormData,
         });
@@ -1120,6 +1172,7 @@ document.getElementById('editForm').addEventListener('submit', async function (e
         visit: formData.get('visit')?.trim(),
         customPurpose: formData.get('customPurpose')?.trim(),
         personname: formData.get('personname')?.trim(),
+        personnameid: formData.get('personnameid')?.trim(),
         department: formData.get('department')?.trim(),
         durationUnit: formData.get('durationUnit'),
         durationtime: formData.get('durationtime'),
@@ -1231,7 +1284,7 @@ async function deleteVisitor(id) {
         .then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`https://192.168.1.82:3001/visitors/${id}`, {
+                    const response = await fetch(`https://192.168.1.57:3001/visitors/${id}`, {
                         method: 'DELETE',
                     });
 

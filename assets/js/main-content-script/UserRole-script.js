@@ -4,7 +4,7 @@ document.addEventListener('alpine:init', () => {
     });
 });
 
-const API_BASE_URL = 'https://192.168.1.82:3001';
+const API_BASE_URL = 'https://192.168.1.57:3001';
 let currentPage = 1;
 let entriesPerPage = 10;
 let isEditMode = false;

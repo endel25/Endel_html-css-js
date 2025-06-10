@@ -7,7 +7,7 @@ let originalVisitorData = null;
 let isPersonNameValid = false;
 
 // Define API base URL
-const API_BASE_URL = 'https://192.168.1.82:3001';
+const API_BASE_URL = 'https://192.168.1.57:3001';
 
 // Helper function to handle API requests
 async function apiRequest(endpoint, method = 'GET', body = null) {
@@ -101,7 +101,7 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
 
     try {
         const response = await fetch(
-            `https://192.168.1.82:3001/users/search?query=${encodeURIComponent(query)}`,
+            `https://192.168.1.57:3001/users/search?query=${encodeURIComponent(query)}`,
             {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -152,8 +152,16 @@ async function fetchPersonNameSuggestions(query, isValidationCheck = false) {
                     personnameInput.value = `${displayName} (${user.department || 'N/A'} & ${user.designation || 'N/A'})`;
                     suggestionsContainer.classList.add('hidden');
                     document.getElementById('edit-department').value = user.department || '';
+                    document.getElementById('edit-personnameid').value = user.id || '';
                     isPersonNameValid = true;
                     errorElement.textContent = '';
+                    
+                    // Update the original visitor data to reflect the change
+                    if (originalVisitorData) {
+                        originalVisitorData.personname = personnameInput.value;
+                        originalVisitorData.personnameid = user.id;
+                        originalVisitorData.department = user.department || '';
+                    }
                 });
                 suggestionsContainer.appendChild(div);
             });
@@ -209,6 +217,7 @@ function attachPersonNameListeners() {
 
 // Function to populate dropdown
 function populateDropdown(selectId, data, valueKey = 'name', selectedValue = '') {
+    console.log(`Populating dropdown ${selectId}:`, { data, valueKey, selectedValue });
     const select = document.getElementById(selectId);
     if (!select) {
         console.error(`Select element with ID '${selectId}' not found`);
@@ -221,6 +230,7 @@ function populateDropdown(selectId, data, valueKey = 'name', selectedValue = '')
         option.textContent = item[valueKey];
         if (item[valueKey] === selectedValue) {
             option.selected = true;
+            console.log(`Selected value matched for ${selectId}:`, item[valueKey]);
         }
         select.appendChild(option);
     });
@@ -229,7 +239,9 @@ function populateDropdown(selectId, data, valueKey = 'name', selectedValue = '')
 // Fetch and populate dropdowns
 async function fetchAndPopulateDropdowns(visitor) {
     try {
+        console.log('Fetching dropdowns for visitor:', visitor);
         const genders = await apiRequest('gender');
+        console.log('Fetched genders:', genders);
         populateDropdown('edit-gender', genders, 'name', visitor.gender || '');
 
         const purposes = await apiRequest('purpose-of-visit');
@@ -391,12 +403,47 @@ function previewImage(input, id) {
     }
 }
 
+// Function to filter visitors based on user role and personnameid
+function filterVisitorsByUserRole(visitors) {
+    const userRole = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId'); // Get user's ID from localStorage
+    
+    console.log('Filtering visitors - User Role:', userRole);
+    console.log('Filtering visitors - User ID:', userId);
+    console.log('All visitors before filtering:', visitors);
+    
+    // If user is superadmin, admin, or security, show all entries
+    if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
+        console.log('User is admin/security, showing all entries');
+        return visitors;
+    }
+    
+    // For other users, only show entries where personnameid matches their userId
+    const filteredVisitors = visitors.filter(visitor => {
+        // Convert both IDs to strings for comparison to handle both string and number types
+        const visitorPersonnameId = String(visitor.personnameid);
+        const userPersonnameId = String(userId);
+        
+        console.log('Comparing IDs:', {
+            visitorPersonnameId,
+            userPersonnameId,
+            visitor: visitor.personname,
+            matches: visitorPersonnameId === userPersonnameId
+        });
+        
+        return visitorPersonnameId === userPersonnameId;
+    });
+    
+    console.log('Filtered visitors:', filteredVisitors);
+    return filteredVisitors;
+}
+
 // Fetch visitor data from API
 async function fetchVisitorData(page = 1, limit = 10, retries = 3) {
     console.log(`📡 Fetching visitor data: page=${page}, limit=${limit}`);
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-            const url = `https://192.168.1.82:3001/appointment?page=${page}&limit=${limit}`;
+            const url = `https://192.168.1.57:3001/appointment?page=${page}&limit=${limit}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
@@ -410,9 +457,12 @@ async function fetchVisitorData(page = 1, limit = 10, retries = 3) {
             if (!data.data || typeof data.total !== 'number') {
                 throw new Error('Invalid response format: expected { data, total }');
             }
+
+            // Filter the data based on user role
+            const filteredData = filterVisitorsByUserRole(data.data);
             return {
-                data: (data.data || []).sort((a, b) => b.id - a.id),
-                total: data.total || 0,
+                data: filteredData.sort((a, b) => b.id - a.id),
+                total: filteredData.length,
             };
         } catch (error) {
             console.error(`Attempt ${attempt} failed to fetch visitor data:`, error);
@@ -588,7 +638,7 @@ async function loadVisitorData() {
 async function fetchVisitorById(visitorId, retries = 3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-            const response = await fetch(`https://192.168.1.82:3001/appointment/${visitorId}`, {
+            const response = await fetch(`https://192.168.1.57:3001/appointment/${visitorId}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -650,6 +700,10 @@ async function openVisitorModal(visitorId) {
         if (element) element.value = value ?? '';
     };
 
+    // First fetch and populate all dropdowns
+    await fetchAndPopulateDropdowns(visitor);
+
+    // Then populate all fields
     populateField('firstname', visitor.firstname);
     populateField('lastname', visitor.lastname);
     populateField('gender', visitor.gender);
@@ -688,8 +742,6 @@ async function openVisitorModal(visitorId) {
         driverDetails.classList.toggle('hidden', !hasDriverDetails);
     }
 
-    await fetchAndPopulateDropdowns(visitor);
-
     const setPhotoPreview = async (previewId, path, visitorId, type) => {
         const preview = document.getElementById(previewId);
         if (!preview) return;
@@ -698,7 +750,7 @@ async function openVisitorModal(visitorId) {
 
         if (path && path.trim() !== '') {
             try {
-                const photoUrl = `https://192.168.1.82:3001/appointment/${visitorId}/photo?type=${type}`;
+                const photoUrl = `https://192.168.1.57:3001/appointment/${visitorId}/photo?type=${type}`;
                 const response = await fetch(photoUrl, { method: 'GET', mode: 'cors' });
                 if (!response.ok) throw new Error('Photo fetch failed');
                 const blob = await response.blob();
@@ -764,7 +816,7 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
         }
 
         const changedData = {};
-        const fields = ['firstname', 'lastname', 'gender', 'contactnumber', 'email', 'date', 'time', 'nationalid', 'visit', 'personname', 'department', 'durationtime', 'durationunit', 'visitortype', 'vehicletype', 'vehiclenumber', 'drivername', 'drivermobile', 'drivernationalid', 'notes'];
+        const fields = ['firstname', 'lastname', 'gender', 'contactnumber', 'email', 'date', 'time', 'nationalid', 'visit', 'personname', 'personnameid', 'department', 'durationtime', 'durationunit', 'visitortype', 'vehicletype', 'vehiclenumber', 'drivername', 'drivermobile', 'drivernationalid', 'notes'];
         fields.forEach(field => {
             const element = document.getElementById(`edit-${field}`);
             if (!element) {
@@ -773,7 +825,8 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
             }
             const currentValue = element.value;
             const originalValue = originalVisitorData[field] ?? '';
-            if (currentValue !== originalValue.toString()) {
+            // Always include personname and personnameid in changedData
+            if (field === 'personname' || field === 'personnameid' || currentValue !== originalValue.toString()) {
                 const key = field === 'durationUnit' ? 'durationunit' : field;
                 changedData[key] = currentValue;
             }
@@ -804,6 +857,14 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
             }
         });
 
+        // Always include personname and personnameid
+        const personnameInput = document.getElementById('edit-personname');
+        const personnameidInput = document.getElementById('edit-personnameid');
+        if (personnameInput && personnameidInput) {
+            body.set('personname', personnameInput.value);
+            body.set('personnameid', personnameidInput.value);
+        }
+
         console.log('📤 Submitting FormData:Data');
         for (const [key, value] of body.entries()) {
             console.log(`${key}: ${value instanceof File ? value.name : value}`);
@@ -825,7 +886,7 @@ document.getElementById('visitorForm').addEventListener('submit', async (e) => {
                 Saving...
             `;
             try {
-                const response = await fetch(`https://192.168.1.82:3001/appointment/${visitorId}`, {
+                const response = await fetch(`https://192.168.1.57:3001/appointment/${visitorId}`, {
                     method: 'PUT',
                     body,
                 });
@@ -901,7 +962,7 @@ async function saveVisitorNote(visitorId, note, maxAttempts = 3) {
 
     async function attemptUpdate(attempt = 1) {
         try {
-            const response = await fetch(`https://192.168.1.82:3001/appointment/${visitorId}`, {
+            const response = await fetch(`https://192.168.1.57:3001/appointment/${visitorId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notes: note }),
@@ -1015,7 +1076,7 @@ async function updateVisitorStatus(visitorId, status, resetStatus = {}, maxAttem
 
     async function attemptUpdate(attempt = 1) {
         try {
-            const response = await fetch(`https://192.168.1.82:3001/appointment/${visitorId}/status/${status}`, {
+            const response = await fetch(`https://192.168.1.57:3001/appointment/${visitorId}/status/${status}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
