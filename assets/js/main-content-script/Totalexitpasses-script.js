@@ -1,4 +1,3 @@
-
 let visitors = [];
 let currentPage = 1;
 let entriesPerPage = 10;
@@ -9,21 +8,18 @@ const API_BASE_URL = 'https://192.168.3.73:3001';
 // Function to filter visitors based on user role and personnameid
 function filterVisitorsByUserRole(visitors) {
     const userRole = localStorage.getItem('role');
-    const userId = localStorage.getItem('userId'); // Get user's ID from localStorage
+    const userId = localStorage.getItem('userId');
     
     console.log('Filtering visitors - User Role:', userRole);
     console.log('Filtering visitors - User ID:', userId);
     console.log('All visitors before filtering:', visitors);
     
-    // If user is superadmin, admin, or security, show all entries
     if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
         console.log('User is admin/security, showing all entries');
         return visitors;
     }
     
-    // For other users, only show entries where personnameid matches their userId
     const filteredVisitors = visitors.filter(visitor => {
-        // Convert both IDs to strings for comparison to handle both string and number types
         const visitorPersonnameId = String(visitor.personnameid);
         const userPersonnameId = String(userId);
         
@@ -42,13 +38,13 @@ function filterVisitorsByUserRole(visitors) {
 }
 
 function updateEntriesPerPage(value) {
-    entriesPerPage = parseInt(value);
+    entriesPerPage = parseInt(value) || 10; // Fallback to 10 if invalid
     currentPage = 1;
     populateTable();
 }
 
 function updateSearchQuery(value) {
-    searchQuery = value;
+    searchQuery = value.trim();
     currentPage = 1;
     populateTable();
 }
@@ -57,7 +53,6 @@ async function fetchVisitors() {
     try {
         console.log('Fetching exit visitors from /appointment and /visitors');
         
-        // Concurrently fetch from both endpoints
         const [appointmentResponse, visitorResponse] = await Promise.all([
             fetch(`${API_BASE_URL}/appointment?t=${new Date().getTime()}`, {
                 method: 'GET',
@@ -69,7 +64,6 @@ async function fetchVisitors() {
             }),
         ]);
 
-        // Check response status
         if (!appointmentResponse.ok) {
             throw new Error(`Appointment API error! Status: ${appointmentResponse.status}`);
         }
@@ -77,33 +71,28 @@ async function fetchVisitors() {
             throw new Error(`Visitor API error! Status: ${visitorResponse.status}`);
         }
 
-        // Parse responses
         let appointmentData = await appointmentResponse.json();
         let visitorData = await visitorResponse.json();
 
-        // Handle paginated response from /appointment
         if (appointmentData.data && Array.isArray(appointmentData.data)) {
             appointmentData = appointmentData.data;
         } else if (!Array.isArray(appointmentData)) {
             throw new Error('Unexpected appointment response format');
         }
 
-        // Ensure visitorData is an array
         if (!Array.isArray(visitorData)) {
             throw new Error('Unexpected visitor response format');
         }
 
-        // Combine and filter exit visitors
         let combinedVisitors = [...appointmentData, ...visitorData]
             .filter(item => item.exit === true)
             .map(item => ({
                 ...item,
                 date: item.date ? item.date.split('-').reverse().join('-') : '',
                 durationunit: item.durationunit || item.durationUnit || '',
-                source: appointmentData.includes(item) ? 'appointment' : 'visitor', // Track source for debugging
+                type: appointmentData.includes(item) ? 'Pre-Approval' : 'Spot', // Map to display values
             }));
 
-        // Apply user role-based filtering
         visitors = filterVisitorsByUserRole(combinedVisitors);
 
         console.log('Combined exit visitors:', visitors);
@@ -147,7 +136,7 @@ function populateTable() {
     const paginatedVisitors = filteredVisitors.slice(start, end);
 
     if (paginatedVisitors.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7">No exit visitors found</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8">No exit visitors found</td></tr>';
     } else {
         paginatedVisitors.forEach(visitor => {
             const row = document.createElement('tr');
@@ -159,6 +148,7 @@ function populateTable() {
                 <td>${visitor.date || ''}</td>
                 <td>${visitor.time || ''}</td>
                 <td>${visitor.nationalid || ''}</td>
+                <td>${visitor.type || ''}</td> <!-- Display type (Spot or Pre-Approval) -->
             `;
             tableBody.appendChild(row);
         });

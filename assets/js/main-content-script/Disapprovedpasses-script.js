@@ -37,13 +37,13 @@ function filterVisitorsByUserRole(visitors) {
 }
 
 function updateEntriesPerPage(value) {
-    entriesPerPage = parseInt(value);
+    entriesPerPage = parseInt(value) || 10; // Fallback to 10 if invalid
     currentPage = 1;
     populateTable();
 }
 
 function updateSearchQuery(value) {
-    searchQuery = value;
+    searchQuery = value.trim();
     currentPage = 1;
     populateTable();
 }
@@ -89,7 +89,7 @@ async function fetchVisitors() {
                 ...item,
                 date: item.date ? item.date.split('-').reverse().join('-') : '',
                 durationunit: item.durationunit || item.durationUnit || '',
-                source: appointmentData.includes(item) ? 'appointment' : 'visitor',
+                source: appointmentData.includes(item) ? 'Pre-Approval' : 'Spot', // Map source to display values
             }));
 
         visitors = filterVisitorsByUserRole(combinedVisitors);
@@ -135,7 +135,7 @@ function populateTable() {
     const paginatedVisitors = filteredVisitors.slice(start, end);
 
     if (paginatedVisitors.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7">No disapproved visitors found</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8">No disapproved visitors found</td></tr>';
     } else {
         paginatedVisitors.forEach(visitor => {
             const row = document.createElement('tr');
@@ -147,8 +147,7 @@ function populateTable() {
                 <td>${visitor.date || ''}</td>
                 <td>${visitor.time || ''}</td>
                 <td>${visitor.nationalid || ''}</td>
-                
-               
+                <td>${visitor.source || ''}</td> <!-- Display type (Spot or Pre-Approval) -->
             `;
             tableBody.appendChild(row);
         });
