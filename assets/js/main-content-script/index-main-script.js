@@ -876,38 +876,38 @@ async fetchVisitorDetails() {
                 const visitorDate = new Date(year, month - 1, day);
                 visitorDate.setHours(0, 0, 0, 0);
 
-switch (this.timeRange) {
-    case 'today':
-        return visitorDate.getTime() === today.getTime();
-    case 'tomorrow': {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-        return visitorDate.getTime() === tomorrow.getTime();
-    }
-    case 'previous': {
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        return visitorDate.getTime() === yesterday.getTime();
-    }
-    case 'month': {
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
-        return visitorDate >= firstDayOfMonth && visitorDate <= lastDayOfMonth;
-    }
-    case 'year': {
-        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
-        const lastDayOfYear = new Date(today.getFullYear(), 11, 31); // Last day of current year
-        return visitorDate >= firstDayOfYear && visitorDate <= lastDayOfYear;
-    }
-    case 'custom': {
-        if (!this.selectedDate) return false;
-        const customDate = new Date(this.selectedDate);
-        customDate.setHours(0, 0, 0, 0);
-        return visitorDate.getTime() === customDate.getTime();
-    }
-    default:
-        return true;
-}
+                switch (this.timeRange) {
+                    case 'today':
+                        return visitorDate.getTime() === today.getTime();
+                    case 'tomorrow': {
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(today.getDate() + 1);
+                        return visitorDate.getTime() === tomorrow.getTime();
+                    }
+                    case 'previous': {
+                        const yesterday = new Date(today);
+                        yesterday.setDate(today.getDate() - 1);
+                        return visitorDate.getTime() === yesterday.getTime();
+                    }
+                    case 'month': {
+                        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
+                        return visitorDate >= firstDayOfMonth && visitorDate <= lastDayOfMonth;
+                    }
+                    case 'year': {
+                        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+                        const lastDayOfYear = new Date(today.getFullYear(), 11, 31); // Last day of current year
+                        return visitorDate >= firstDayOfYear && visitorDate <= lastDayOfYear;
+                    }
+                    case 'custom': {
+                        if (!this.selectedDate) return false;
+                        const customDate = new Date(this.selectedDate);
+                        customDate.setHours(0, 0, 0, 0);
+                        return visitorDate.getTime() === customDate.getTime();
+                    }
+                    default:
+                        return true;
+                }
             });
         },
 
@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = [
         {
             id: 'totalVisitorsCard',
-            selector: '.panel[onclick*="SpotEntry.html"]',
+            selector: '.panel[onclick*="Totalvisitorpasses.html"]',
             permissions: permissions.totalVisitors,
             reason: 'You do not have permission to interact with Total Visitors.'
         },
