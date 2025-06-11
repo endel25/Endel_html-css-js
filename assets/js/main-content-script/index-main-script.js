@@ -718,10 +718,13 @@ document.addEventListener('alpine:init', () => {
         },
 
         getVisitorStatus(visitor) {
-            if (!visitor.isApproved) return 'pending';
+            console.log('visitor>>>>>', visitor);
             if (visitor.exitApproval) return 'exit';
+            if (!visitor.isApproved) return 'pending';
+            // if (visitor.exitApproval) return 'exit';
+            if (visitor.complete) return 'complete';
             if (visitor.isApproved && !visitor.exitApproval) return 'incampus';
-            return 'complete';
+            return 'pending';
         },
 
         renderProgressSteps(visitor) {
@@ -957,33 +960,42 @@ switch (this.timeRange) {
 // Add logic to update step classes based on status
 document.addEventListener('DOMContentLoaded', () => {
     const updateSteps = () => {
+        console.log('Updating steps', document.querySelectorAll('.progress-steps'));
         document.querySelectorAll('.progress-steps').forEach(progress => {
             const status = progress.dataset.status;
             const isDisapproved = progress.dataset.isDisapproved === 'true' || false;
             const isExited = progress.dataset.isExited === 'true' || false;
             const steps = progress.querySelectorAll('.step');
-
             steps.forEach(step => {
                 step.classList.remove('active', 'red');
                 const stepType = step.dataset.step;
+                console.log('stepType>>>>>', stepType);
 
-                if (isDisapproved) {
-                    // When disapproved, make all steps red
-                    step.classList.add('red');
-                } else {
-                    const shouldHighlight =
-                        (status === 'pending' && stepType === 'pending') ||
-                        (status === 'incampus' && (stepType === 'pending' || stepType === 'incampus')) ||
-                        (status === 'complete' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete')) ||
-                        (status === 'exit' && (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete' || stepType === 'exit'));
-
-                    if (shouldHighlight) {
-                        if (isExited && stepType === 'exit') {
-                            step.classList.add('red');
-                        } else {
-                            step.classList.add('active');
+                switch (status) {
+                    case 'pending':
+                        if (stepType === 'pending') {
+                            step.classList.add(isDisapproved ? 'red' : 'active');
                         }
-                    }
+                        break;
+                    case 'incampus':
+                        if (stepType === 'pending' || stepType === 'incampus') {
+                            step.classList.add(isDisapproved ? 'red' : 'active');
+                        }
+                        break;
+                    case 'complete':
+                        if (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete') {
+                            step.classList.add(isDisapproved ? 'red' : 'active');
+                        }
+                        break;
+                    case 'exit':
+                        if (stepType === 'pending' || stepType === 'incampus' || stepType === 'complete' || stepType === 'exit') {
+                            if (isExited && stepType === 'exit') {
+                                step.classList.add('red');
+                            } else {
+                                step.classList.add(isDisapproved ? 'red' : 'active');
+                            }
+                        }
+                        break;
                 }
             });
         });
