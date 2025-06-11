@@ -306,7 +306,7 @@
                                             <!-- Filtered Rows -->
                                             <template x-for="(visitor, index) in filteredVisitors" :key="`${visitor.id}-${visitor.recordType}`">
                                                 <tr>
-                                                    <td x-text="`${visitor.firstName} ${visitor.lastName}`"></td>
+                                                    <td x-text="visitor.fullName"></td> <!-- Use fullName instead of combining firstName and lastName -->
                                                     <td x-text="visitor.date.split('-').reverse().join('-')"></td>
                                                     <td x-text="visitor.allocatedTime"></td>
                                                     <td x-text="visitor.contactnumber"></td>

@@ -1,8 +1,44 @@
-
 let visitors = [];
 let currentPage = 1;
 let entriesPerPage = 10;
 let searchQuery = '';
+
+const API_BASE_URL = 'https://192.168.3.73:3001';
+
+// Function to filter visitors based on user role and personnameid
+function filterVisitorsByUserRole(visitors) {
+    const userRole = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId'); // Get user's ID from localStorage
+    
+    console.log('Filtering visitors - User Role:', userRole);
+    console.log('Filtering visitors - User ID:', userId);
+    console.log('All visitors before filtering:', visitors);
+    
+    // If user is superadmin, admin, or security, show all entries
+    if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
+        console.log('User is admin/security, showing all entries');
+        return visitors;
+    }
+    
+    // For other users, only show entries where personnameid matches their userId
+    const filteredVisitors = visitors.filter(visitor => {
+        // Convert both IDs to strings for comparison to handle both string and number types
+        const visitorPersonnameId = String(visitor.personnameid);
+        const userPersonnameId = String(userId);
+        
+        console.log('Comparing IDs:', {
+            visitorPersonnameId,
+            userPersonnameId,
+            visitor: visitor.personname,
+            matches: visitorPersonnameId === userPersonnameId
+        });
+        
+        return visitorPersonnameId === userPersonnameId;
+    });
+    
+    console.log('Filtered visitors:', filteredVisitors);
+    return filteredVisitors;
+}
 
 function updateEntriesPerPage(value) {
     entriesPerPage = parseInt(value);
@@ -18,38 +54,72 @@ function updateSearchQuery(value) {
 
 async function fetchVisitors() {
     try {
-        console.log('Fetching approved visitors from https://192.168.3.73:3001/visitors');
-        const response = await fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
+        console.log('Fetching approved visitors from /appointment and /visitors');
+        
+        // Concurrently fetch from both endpoints
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            fetch(`${API_BASE_URL}/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        // Check response status
+        if (!appointmentResponse.ok) {
+            throw new Error(`Appointment API error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`Visitor API error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        console.log('Fetched visitors:', data);
-        visitors = data
-            .filter(visitor => visitor.isApproved === true)
-            .map(visitor => ({
-                ...visitor,
-                date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-                durationunit: visitor.durationunit || visitor.durationUnit || '',
+        // Parse responses
+        let appointmentData = await appointmentResponse.json();
+        let visitorData = await visitorResponse.json();
+
+        // Handle paginated response from /appointment
+        if (appointmentData.data && Array.isArray(appointmentData.data)) {
+            appointmentData = appointmentData.data;
+        } else if (!Array.isArray(appointmentData)) {
+            throw new Error('Unexpected appointment response format');
+        }
+
+        // Ensure visitorData is an array
+        if (!Array.isArray(visitorData)) {
+            throw new Error('Unexpected visitor response format');
+        }
+
+        // Combine and filter approved passes
+        let combinedVisitors = [...appointmentData, ...visitorData]
+            .filter(item => item.isApproved === true)
+            .map(item => ({
+                ...item,
+                date: item.date ? item.date.split('-').reverse().join('-') : '',
+                durationunit: item.durationunit || item.durationUnit || '',
+                source: appointmentData.includes(item) ? 'appointment' : 'visitor', // Track source for debugging
             }));
 
+        // Apply user role-based filtering
+        visitors = filterVisitorsByUserRole(combinedVisitors);
+
+        console.log('Filtered approved visitors:', visitors);
+
         if (visitors.length === 0) {
-            console.warn('No approved visitors fetched from the server');
+            console.warn('No approved visitors fetched after filtering');
         }
 
-        localStorage.setItem('visitors', JSON.stringify(visitors));
+        localStorage.setItem('approvedVisitors', JSON.stringify(visitors));
         populateTable();
     } catch (error) {
         console.error('Failed to fetch visitors:', error.message);
-        visitors = JSON.parse(localStorage.getItem('visitors')) || [];
+        visitors = JSON.parse(localStorage.getItem('approvedVisitors')) || [];
         visitors = visitors.filter(visitor => visitor.isApproved === true);
+        visitors = filterVisitorsByUserRole(visitors);
         if (visitors.length === 0) {
-            console.warn('No cached approved visitors available either');
+            console.warn('No cached approved visitors available');
         }
         populateTable();
     }
@@ -81,14 +151,14 @@ function populateTable() {
         paginatedVisitors.forEach(visitor => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                    <td>${visitor.id || ''}</td>
-                    <td>${visitor.firstname || ''}</td>
-                    <td>${visitor.lastname || ''}</td>
-                    <td>${visitor.contactnumber || ''}</td>
-                    <td>${visitor.date || ''}</td>
-                    <td>${visitor.time || ''}</td>
-                    <td>${visitor.nationalid || ''}</td>
-                `;
+                <td>${visitor.id || ''}</td>
+                <td>${visitor.firstname || ''}</td>
+                <td>${visitor.lastname || ''}</td>
+                <td>${visitor.contactnumber || ''}</td>
+                <td>${visitor.date || ''}</td>
+                <td>${visitor.time || ''}</td>
+                <td>${visitor.nationalid || ''}</td>
+            `;
             tableBody.appendChild(row);
         });
     }
@@ -135,4 +205,3 @@ function nextPage() {
 
 // Initial fetch
 fetchVisitors();
-

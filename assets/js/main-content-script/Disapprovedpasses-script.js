@@ -1,8 +1,40 @@
-
 let visitors = [];
 let currentPage = 1;
 let entriesPerPage = 10;
 let searchQuery = '';
+
+const API_BASE_URL = 'https://192.168.3.73:3001';
+
+function filterVisitorsByUserRole(visitors) {
+    const userRole = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId');
+    
+    console.log('Filtering visitors - User Role:', userRole);
+    console.log('Filtering visitors - User ID:', userId);
+    console.log('All visitors before filtering:', visitors);
+    
+    if (['superadmin', 'admin', 'security'].includes(userRole?.toLowerCase())) {
+        console.log('User is admin/security, showing all entries');
+        return visitors;
+    }
+    
+    const filteredVisitors = visitors.filter(visitor => {
+        const visitorPersonnameId = String(visitor.personnameid);
+        const userPersonnameId = String(userId);
+        
+        console.log('Comparing IDs:', {
+            visitorPersonnameId,
+            userPersonnameId,
+            visitor: visitor.personname,
+            matches: visitorPersonnameId === userPersonnameId
+        });
+        
+        return visitorPersonnameId === userPersonnameId;
+    });
+    
+    console.log('Filtered visitors:', filteredVisitors);
+    return filteredVisitors;
+}
 
 function updateEntriesPerPage(value) {
     entriesPerPage = parseInt(value);
@@ -18,38 +50,65 @@ function updateSearchQuery(value) {
 
 async function fetchVisitors() {
     try {
-        console.log('Fetching disapproved visitors from https://192.168.3.73:3001/visitors');
-        const response = await fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
+        console.log('Fetching disapproved visitors from /appointment and /visitors');
+        
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            fetch(`${API_BASE_URL}/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        ]);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!appointmentResponse.ok) {
+            throw new Error(`Appointment API error! Status: ${appointmentResponse.status}`);
+        }
+        if (!visitorResponse.ok) {
+            throw new Error(`Visitor API error! Status: ${visitorResponse.status}`);
         }
 
-        const data = await response.json();
-        console.log('Fetched visitors:', data);
-        visitors = data
-            .filter(visitor => visitor.isApproved === false)
-            .map(visitor => ({
-                ...visitor,
-                date: visitor.date ? visitor.date.split('-').reverse().join('-') : '',
-                durationunit: visitor.durationunit || visitor.durationUnit || '',
+        let appointmentData = await appointmentResponse.json();
+        let visitorData = await visitorResponse.json();
+
+        if (appointmentData.data && Array.isArray(appointmentData.data)) {
+            appointmentData = appointmentData.data;
+        } else if (!Array.isArray(appointmentData)) {
+            throw new Error('Unexpected appointment response format');
+        }
+
+        if (!Array.isArray(visitorData)) {
+            throw new Error('Unexpected visitor response format');
+        }
+
+        let combinedVisitors = [...appointmentData, ...visitorData]
+            .filter(item => item.isApproved === false)
+            .map(item => ({
+                ...item,
+                date: item.date ? item.date.split('-').reverse().join('-') : '',
+                durationunit: item.durationunit || item.durationUnit || '',
+                source: appointmentData.includes(item) ? 'appointment' : 'visitor',
             }));
 
+        visitors = filterVisitorsByUserRole(combinedVisitors);
+
+        console.log('Filtered disapproved visitors:', visitors);
+
         if (visitors.length === 0) {
-            console.warn('No disapproved visitors fetched from the server');
+            console.warn('No disapproved visitors fetched after filtering');
         }
 
-        localStorage.setItem('visitors', JSON.stringify(visitors));
+        localStorage.setItem('disapprovedVisitors', JSON.stringify(visitors));
         populateTable();
     } catch (error) {
         console.error('Failed to fetch visitors:', error.message);
-        visitors = JSON.parse(localStorage.getItem('visitors')) || [];
+        visitors = JSON.parse(localStorage.getItem('disapprovedVisitors')) || [];
         visitors = visitors.filter(visitor => visitor.isApproved === false);
+        visitors = filterVisitorsByUserRole(visitors);
         if (visitors.length === 0) {
-            console.warn('No cached disapproved visitors available either');
+            console.warn('No cached disapproved visitors available');
         }
         populateTable();
     }
@@ -81,21 +140,23 @@ function populateTable() {
         paginatedVisitors.forEach(visitor => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                    <td>${visitor.id || ''}</td>
-                    <td>${visitor.firstname || ''}</td>
-                    <td>${visitor.lastname || ''}</td>
-                    <td>${visitor.contactnumber || ''}</td>
-                    <td>${visitor.date || ''}</td>
-                    <td>${visitor.time || ''}</td>
-                    <td>${visitor.nationalid || ''}</td>
-                `;
+                <td>${visitor.id || ''}</td>
+                <td>${visitor.firstname || ''}</td>
+                <td>${visitor.lastname || ''}</td>
+                <td>${visitor.contactnumber || ''}</td>
+                <td>${visitor.date || ''}</td>
+                <td>${visitor.time || ''}</td>
+                <td>${visitor.nationalid || ''}</td>
+                
+               
+            `;
             tableBody.appendChild(row);
         });
     }
 
     const totalEntries = filteredVisitors.length;
     const totalPages = Math.ceil(totalEntries / entriesPerPage);
-    const showingStart = totalEntries === 0 ? 0 : start + 1;
+    const showingStart = totalEntries ? start + 1 : 0;
     const showingEnd = Math.min(end, totalEntries);
     document.getElementById('paginationInfo').textContent = `Showing ${showingStart} to ${showingEnd} of ${totalEntries} entries`;
 
@@ -133,6 +194,4 @@ function nextPage() {
     }
 }
 
-// Initial fetch
 fetchVisitors();
-

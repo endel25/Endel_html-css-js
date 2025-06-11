@@ -1,4 +1,3 @@
-// Function to get permissions from localStorage
 function getPermissions() {
     const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
     const dashboardPermissions = permissions.find(p => p.name === 'Dashboard') || {
@@ -93,9 +92,7 @@ async function fetchApprovedVisitors() {
                 }))
         ];
 
-        // Filter the combined data based on user role
         approvedVisitors = filterVisitorsByUserRole(combinedData);
-
         localStorage.setItem('approvedVisitors', JSON.stringify(approvedVisitors));
         updateApprovedCard();
     } catch (error) {
@@ -149,9 +146,7 @@ async function fetchDisapprovedVisitors() {
                 }))
         ];
 
-        // Filter the combined data based on user role
         disapprovedVisitors = filterVisitorsByUserRole(combinedData);
-
         localStorage.setItem('disapprovedVisitors', JSON.stringify(disapprovedVisitors));
         updateDisapprovedCard();
     } catch (error) {
@@ -205,9 +200,7 @@ async function fetchExitVisitors() {
                 }))
         ];
 
-        // Filter the combined data based on user role
         exitVisitors = filterVisitorsByUserRole(combinedData);
-
         localStorage.setItem('exitVisitors', JSON.stringify(exitVisitors));
         updateExitCard();
     } catch (error) {
@@ -259,13 +252,10 @@ async function fetchVisitors() {
                 }))
         ];
 
-        // Filter the combined data based on user role
         allVisitors = filterVisitorsByUserRole(combinedData);
-
         if (allVisitors.length === 0) {
             console.warn('No visitors fetched from the server');
         }
-
         localStorage.setItem('allVisitors', JSON.stringify(allVisitors));
         updateCard();
     } catch (error) {
@@ -404,57 +394,40 @@ function updateCard() {
     }
 }
 
-// Function to filter visitors based on user role and personnameid
 function filterVisitorsByUserRole(visitors) {
     const userRole = localStorage.getItem('role');
     const userId = localStorage.getItem('userId');
     const username = localStorage.getItem('username');
 
-    console.log('Filtering visitors with:', {
-        userRole,
-        userId,
-        username,
-        totalVisitors: visitors.length
+    console.log('=== Filtering Debug Info ===');
+    console.log('User Info:', {
+        role: userRole,
+        userId: userId,
+        username: username
     });
 
-    // If user is superadmin, admin, or security, show all entries
     if (userRole === 'superadmin' || userRole === 'admin' || userRole === 'security') {
-        console.log('User has privileged role, showing all entries');
         return visitors;
     }
 
-    // For other users, show only entries where personnameid matches their ID or personname matches their username
-    const filteredVisitors = visitors.filter(visitor => {
-        // Convert both IDs to strings for comparison to handle both string and number types
-        const visitorPersonnameId = String(visitor.personnameid);
-        const userPersonnameId = String(userId);
-        
-        const matches = visitorPersonnameId === userPersonnameId || visitor.personname === username;
-        
+    return visitors.filter(visitor => {
+        if (!visitor || !userId) return false;
+        const visitorId = String(visitor.personnameid || '').trim();
+        const userPersonId = String(userId).trim();
+        const isMatch = visitorId === userPersonId;
+
         console.log('Checking visitor:', {
             visitorId: visitor.id,
-            visitorPersonnameId,
-            userPersonnameId,
-            visitorPersonname: visitor.personname,
-            username,
-            matches
+            visitorPersonId: visitorId,
+            userPersonId: userPersonId,
+            isMatch: isMatch
         });
-        
-        return matches;
-    });
 
-    console.log('Filtered visitors:', {
-        before: visitors.length,
-        after: filteredVisitors.length,
-        filteredVisitors
+        return isMatch;
     });
-
-    return filteredVisitors;
 }
 
-// Alpine.js data components
 document.addEventListener('alpine:init', () => {
-    // Upcoming Appointments
     Alpine.data('upcomingAppointments', () => ({
         appointmentsList: [],
         searchQuery: '',
@@ -529,24 +502,21 @@ document.addEventListener('alpine:init', () => {
                         purpose: item.visit || 'N/A',
                         nationalId: item.nationalid || 'N/A',
                         typeOfPass,
-                        personnameid: item.personnameid // Add personnameid to the normalized data
+                        personnameid: item.personnameid
                     };
                 };
 
                 const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                     .filter(item => item.date && item.date >= today)
-                    .map((item, index) => normalizeData(item, 'preapproval', index));
+                    .map((item, index) => normalizeData(item, ' Pre-Approval', index));
 
                 const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
                     .filter(item => item.date && item.date >= today)
-                    .map((item, index) => normalizeData(item, 'spot', index));
+                    .map((item, index) => normalizeData(item, 'Spot', index));
 
-                // Combine and filter the data based on user role
                 const combinedData = [...processedAppointmentData, ...processedVisitorData];
                 const filteredData = filterVisitorsByUserRole(combinedData);
-
                 this.appointmentsList = filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
                 console.log('Mapped Upcoming Appointments List:', JSON.stringify(this.appointmentsList, null, 2));
             } catch (error) {
                 console.error('Error fetching upcoming appointments:', error);
@@ -556,7 +526,6 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 
-    // Today's Visitors
     Alpine.data('todaysVisitors', () => ({
         visitorsList: [],
         searchQuery: '',
@@ -625,8 +594,8 @@ document.addEventListener('alpine:init', () => {
 
                     return {
                         id: `${recordType}-${item.id}-${Date.now()}`,
-                        firstName: item.firstname || 'Unknown',
-                        lastName: item.lastname || 'Unknown',
+                        firstName: item.first_name || item.firstname || 'Unknown',
+                        lastName: item.last_name || item.lastname || 'Unknown',
                         date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
                         allocatedTime: item.time || 'N/A',
                         host: hostName,
@@ -643,16 +612,15 @@ document.addEventListener('alpine:init', () => {
 
                 const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
                     .filter(item => item.date === today)
-                    .map(item => normalizeData(item, 'preapproval'));
+                    .map(item => normalizeData(item, 'Pre-Approval'));
 
                 const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
                     .filter(item => item.date === today)
-                    .map(item => normalizeData(item, 'spot'));
+                    .map(item => normalizeData(item, 'Spot'));
 
                 console.log('Processed appointment data:', processedAppointmentData);
                 console.log('Processed visitor data:', processedVisitorData);
 
-                // Combine and filter the data based on user role
                 const combinedData = [...processedAppointmentData, ...processedVisitorData];
                 console.log('Combined data before filtering:', combinedData);
                 
@@ -683,7 +651,6 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 
-    // Visitor Details
     Alpine.data('visitorDetails', () => ({
         visitors: [],
         loading: true,
@@ -697,6 +664,7 @@ document.addEventListener('alpine:init', () => {
         itemsPerPage: 10,
         totalPages: 1,
         permissions: getPermissions(),
+        showCustomDatePicker: false,
 
         init() {
             this.fetchVisitorDetails();
@@ -718,10 +686,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         getVisitorStatus(visitor) {
-            console.log('visitor>>>>>', visitor);
             if (visitor.exitApproval) return 'exit';
             if (!visitor.isApproved) return 'pending';
-            // if (visitor.exitApproval) return 'exit';
             if (visitor.complete) return 'complete';
             if (visitor.isApproved && !visitor.exitApproval) return 'incampus';
             return 'pending';
@@ -817,134 +783,136 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async fetchVisitorDetails() {
-            try {
-                this.loading = true;
-                const [appointmentResponse, visitorResponse] = await Promise.all([
-                    fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    }),
-                    fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                ]);
+async fetchVisitorDetails() {
+    try {
+        this.loading = true;
+        console.log('=== Fetching Visitor Details ===');
+        const [appointmentResponse, visitorResponse] = await Promise.all([
+            fetch(`https://192.168.3.73:3001/appointment?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            }),
+            fetch(`https://192.168.3.73:3001/visitors?t=${new Date().getTime()}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+        ]);
 
-                if (!appointmentResponse.ok || !visitorResponse.ok) {
-                    throw new Error('Failed to fetch visitor data');
+        if (!appointmentResponse.ok || !visitorResponse.ok) {
+            throw new Error('Failed to fetch visitor data');
+        }
+
+        const appointmentData = await appointmentResponse.json();
+        const visitorData = await visitorResponse.json();
+
+        const appointmentArray = Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [];
+        const visitorArray = Array.isArray(visitorData) ? visitorData : visitorData.data || [];
+
+        const normalizeData = (item, recordType) => {
+            let hostName = 'Unknown';
+            let department = 'N/A';
+            let designation = 'N/A';
+
+            if (item.personname) {
+                const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
+                if (match) {
+                    hostName = match[1].trim();
+                    department = match[2].trim();
+                    designation = match[3].trim();
+                } else {
+                    hostName = item.personname;
                 }
-
-                const appointmentData = await appointmentResponse.json();
-                const visitorData = await visitorResponse.json();
-
-                // Date filtering logic based on timeRange
-                const today = new Date();
-                let startDate, endDate;
-
-switch (this.timeRange) {
-    case 'today':
-        startDate = today.toISOString().split('T')[0];
-        endDate = startDate;
-        this.selectedDate = startDate;
-        break;
-    case 'tomorrow':
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        startDate = tomorrow.toISOString().split('T')[0];
-        endDate = startDate;
-        this.selectedDate = startDate;
-        break;
-    case 'previous':
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        startDate = yesterday.toISOString().split('T')[0];
-        endDate = startDate;
-        this.selectedDate = startDate;
-        break;
-    case 'month':
-        startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
-        // Set endDate to the last day of the current month
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        endDate = lastDayOfMonth.toISOString().split('T')[0];
-        break;
-    case 'year':
-        startDate = `${today.getFullYear()}-01-01`;
-        // Set endDate to the last day of the current year
-        const lastDayOfYear = new Date(today.getFullYear(), 12, 0);
-        endDate = lastDayOfYear.toISOString().split('T')[0];
-        break;
-    case 'custom':
-        startDate = this.selectedDate;
-        endDate = this.selectedDate;
-        break;
-    default:
-        startDate = today.toISOString().split('T')[0];
-        endDate = startDate;
-        this.selectedDate = startDate;
-}
-
-                const normalizeData = (item, recordType) => {
-                    let hostName = 'Unknown';
-                    let department = 'N/A';
-                    let designation = 'N/A';
-
-                    if (item.personname) {
-                        const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
-                        if (match) {
-                            hostName = match[1].trim();
-                            department = match[2].trim();
-                            designation = match[3].trim();
-                        } else {
-                            hostName = item.personname;
-                        }
-                    }
-
-                    return {
-                        id: item.id,
-                        firstName: item.firstname || 'Unknown',
-                        lastName: item.lastname || 'Unknown',
-                        date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
-                        allocatedTime: item.time || 'N/A',
-                        contactnumber: item.contactnumber || 'N/A',
-                        host: hostName,
-                        department,
-                        designation,
-                        purpose: item.visit || 'N/A',
-                        nationalId: item.nationalid || 'N/A',
-                        isApproved: item.isApproved ?? false,
-                        exitApproval: item.exit ?? false,
-                        complete: item.complete ?? false,
-                        typeOfPass: recordType,
-                        recordType
-                    };
-                };
-
-                const processedAppointmentData = (Array.isArray(appointmentData) ? appointmentData : appointmentData.data || [])
-                    .filter(item => {
-                        const itemDate = item.date;
-                        return itemDate >= startDate && itemDate <= endDate;
-                    })
-                    .map(item => normalizeData(item, 'preapproval'));
-
-                const processedVisitorData = (Array.isArray(visitorData) ? visitorData : visitorData.data || [])
-                    .filter(item => {
-                        const itemDate = item.date;
-                        return itemDate >= startDate && itemDate <= endDate;
-                    })
-                    .map(item => normalizeData(item, 'spot'));
-
-                const combinedData = [...processedAppointmentData, ...processedVisitorData];
-                const filteredData = filterVisitorsByUserRole(combinedData);
-                this.visitors = filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                console.log('Mapped Visitor List:', JSON.stringify(this.visitors, null, 2));
-            } catch (error) {
-                console.error('Error fetching visitor details:', error);
-                this.visitors = [];
-                this.showMessage('Failed to load visitor details. Please try again later.', 'error');
-            } finally {
-                this.loading = false;
             }
+
+            return {
+                ...item,
+                recordType,
+                date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
+                allocatedTime: item.time || 'N/A',
+                host: hostName,
+                department,
+                designation,
+                purpose: item.visit || 'N/A',
+                nationalId: item.nationalid || 'N/A',
+                isApproved: item.isApproved ?? false,
+                exitApproval: item.exit ?? false,
+                complete: item.complete ?? false,
+                fullName: `${item.first_name || item.firstname || ''} ${item.last_name || item.lastname || ''}`.trim() || 'Unknown',
+                typeOfPass: recordType === 'preapproval' ? 'Pre-Approval' : 'Spot'
+            };
+        };
+
+        const combinedData = [
+            ...appointmentArray.map(item => normalizeData(item, 'preapproval')),
+            ...visitorArray.map(item => normalizeData(item, 'spot'))
+        ];
+
+        // Apply time range filter
+        const filteredByTime = this.filterByTimeRange(combinedData);
+        const filteredData = filterVisitorsByUserRole(filteredByTime);
+        
+        this.visitors = filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        this.totalPages = Math.ceil(this.visitors.length / this.itemsPerPage);
+        
+        console.log('Final processed visitors:', this.visitors);
+    } catch (error) {
+        console.error('Error fetching visitor details:', error);
+        this.visitors = [];
+        this.showMessage('Failed to load visitor details. Please try again later.', 'error');
+    } finally {
+        this.loading = false;
+    }
+},
+
+        filterByTimeRange(data) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            return data.filter(item => {
+                if (!item.date || item.date === 'N/A') return false;
+                
+                // Convert DD-MM-YYYY to Date object
+                const [day, month, year] = item.date.split('-').map(Number);
+                const visitorDate = new Date(year, month - 1, day);
+                visitorDate.setHours(0, 0, 0, 0);
+
+                switch (this.timeRange) {
+                    case 'today':
+                        return visitorDate.getTime() === today.getTime();
+                    case 'tomorrow': {
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(today.getDate() + 1);
+                        return visitorDate.getTime() === tomorrow.getTime();
+                    }
+                    case 'previous': {
+                        const yesterday = new Date(today);
+                        yesterday.setDate(today.getDate() - 1);
+                        return visitorDate.getTime() === yesterday.getTime();
+                    }
+                    case 'month': {
+                        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                        return visitorDate >= firstDayOfMonth && visitorDate <= today;
+                    }
+                    case 'year': {
+                        const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+                        return visitorDate >= firstDayOfYear && visitorDate <= today;
+                    }
+                    case 'custom': {
+                        if (!this.selectedDate) return false;
+                        const customDate = new Date(this.selectedDate);
+                        customDate.setHours(0, 0, 0, 0);
+                        return visitorDate.getTime() === customDate.getTime();
+                    }
+                    default:
+                        return true;
+                }
+            });
+        },
+
+        updateTimeRange(value) {
+            this.timeRange = value;
+            this.showCustomDatePicker = value === 'custom';
+            this.fetchVisitorDetails();
         },
 
         showMessage(msg, type = 'success') {
@@ -957,10 +925,8 @@ switch (this.timeRange) {
     }));
 });
 
-// Add logic to update step classes based on status
 document.addEventListener('DOMContentLoaded', () => {
     const updateSteps = () => {
-        console.log('Updating steps', document.querySelectorAll('.progress-steps'));
         document.querySelectorAll('.progress-steps').forEach(progress => {
             const status = progress.dataset.status;
             const isDisapproved = progress.dataset.isDisapproved === 'true' || false;
@@ -969,7 +935,6 @@ document.addEventListener('DOMContentLoaded', () => {
             steps.forEach(step => {
                 step.classList.remove('active', 'red');
                 const stepType = step.dataset.step;
-                console.log('stepType>>>>>', stepType);
 
                 switch (status) {
                     case 'pending':
@@ -1001,13 +966,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Initial update
     updateSteps();
-
-    // Watch for Alpine.js updates
     document.addEventListener('alpine:initialized', updateSteps);
     
-    // Create a MutationObserver to watch for changes in the DOM
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
@@ -1016,17 +977,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Start observing the document body for changes
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
 });
 
-// Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM fully loaded, initializing dashboard');
-
     const permissions = getPermissions();
 
     const createButton = document.getElementById('sticky-button');
@@ -1146,11 +1104,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', function () {
     const isDarkMode = document.documentElement.classList.contains('dark');
-
-    // Define colors for chart-status (Total Visitors: blue, Approved Passes: green, Disapproved Passes: red, Total Exit Passes: yellow)
-    const statusBackgroundColors = ['#3b82f6', '#10b981', '#ef4444', '#fbbf24']; // Blue, Green, Red, Yellow
-    const typeBackgroundColors = ['#3b82f6', '#10b981']; // Blue for Spot Entry, Yellow for Pre-Approval Entry
-
+    const statusBackgroundColors = ['#3b82f6', '#10b981', '#ef4444', '#fbbf24'];
+    const typeBackgroundColors = ['#3b82f6', '#10b981'];
     const borderColor = isDarkMode ? '#1f2937' : '#ffffff';
 
     setTimeout(() => {
