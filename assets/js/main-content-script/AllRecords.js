@@ -3,15 +3,20 @@ let currentPage = 1;
 let entriesPerPage = 10;
 let searchQuery = '';
 
+// Debounce function to limit rapid search updates
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 // Original fetchAllRecords function (unchanged)
 async function fetchAllRecords() {
   try {
     const response = await fetch('https://192.168.3.73:3001/master-records');
-
-    const fetchedRecords = await response.json(); // Convert a json string to json object,array
-
-    const tableBody = document.getElementById('visitorTableBody');
-    // Do not update tableBody directly; return records for pagination
+    const fetchedRecords = await response.json();
     return fetchedRecords;
   } catch (error) {
     console.error('Error fetching master records:', error);
@@ -19,7 +24,43 @@ async function fetchAllRecords() {
   }
 }
 
-// New function to populate table with pagination and search
+// Normalize data function (provided by user)
+const normalizeData = (item, typeOfPass, index) => {
+  let hostName = 'Unknown';
+  let department = 'N/A';
+  let designation = 'N/A';
+
+  if (item.personname) {
+    const match = item.personname.match(/^(.+?)\s*\((.+?)\s*&\s*(.+?)\)$/);
+    if (match) {
+      hostName = match[1].trim();
+      department = match[2].trim();
+      designation = match[3].trim();
+    } else {
+      hostName = item.personname;
+    }
+  }
+
+  return {
+    id: item.id || 'N/A',
+    firstName: item.firstname || 'Unknown',
+    lastName: item.lastname || 'Unknown',
+    date: item.date ? item.date.split('-').reverse().join('-') : 'N/A',
+    allocatedTime: item.time || 'N/A',
+    host: hostName,
+    department,
+    designation,
+    purpose: item.visit || 'N/A',
+    nationalId: item.nationalid || 'N/A',
+    typeOfPass,
+    personnameid: item.personnameid,
+    contactnumber: item.contactnumber || 'N/A', // Added to match original table
+    visitortype: item.visitortype || 'N/A', // Added to match original table
+    recordType: item.recordType || 'N/A' // Added to match original table
+  };
+};
+
+// Function to populate table with pagination and search
 async function populateTable() {
   const tableBody = document.getElementById('visitorTableBody');
   if (!tableBody) {
@@ -31,15 +72,17 @@ async function populateTable() {
   // Fetch records if not already loaded
   if (records.length === 0) {
     records = await fetchAllRecords();
+    // Normalize all records on fetch
+    records = records.map((record, index) => normalizeData(record, 'visitor', index));
   }
 
   // Filter records based on search query
   const filteredRecords = records.filter(
     record =>
-      record.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.contactnumber?.includes(searchQuery) ||
-      record.nationalid?.toLowerCase().includes(searchQuery.toLowerCase())
+      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Calculate pagination
@@ -47,7 +90,7 @@ async function populateTable() {
   const end = start + entriesPerPage;
   const paginatedRecords = filteredRecords.slice(start, end);
 
-  // Populate table (reusing original fetchAllRecords' table population logic)
+  // Populate table
   if (paginatedRecords.length === 0) {
     tableBody.innerHTML = '<tr><td colspan="12">No records found</td></tr>';
   } else {
@@ -55,14 +98,21 @@ async function populateTable() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${record.id || ''}</td>
-        <td>${record.firstname || ''}</td>
-        <td>${record.lastname || ''}</td>
+        <td>${record.firstName || ''}</td>
+        <td>${record.lastName || ''}</td>
         <td>${record.contactnumber || ''}</td>
         <td>${record.date || ''}</td>
-        <td>${record.time || ''}</td>
-        <td>${record.nationalid || ''}</td>
-        <td>${record.visit || ''}</td>
-        <td>${record.personname || ''}</td>
+        <td>${record.allocatedTime || ''}</td>
+        <td>${record.nationalId || ''}</td>
+        <td>${record.purpose || ''}</td>
+        <td class="personname-cell" data-host="${record.host}" data-department="${record.department}" data-designation="${record.designation}">
+          ${record.host || ''}
+          <div class="tooltip">
+            <strong>Host:</strong> ${record.host}<br>
+            <strong>Department:</strong> ${record.department}<br>
+            <strong>Designation:</strong> ${record.designation}
+          </div>
+        </td>
         <td>${record.department || ''}</td>
         <td>${record.visitortype || ''}</td>
         <td>${record.recordType || ''}</td>
@@ -103,10 +153,10 @@ function previousPage() {
 function nextPage() {
   const filteredRecords = records.filter(
     record =>
-      record.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record | record.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.contactnumber?.includes(searchQuery) ||
-      record.nationalid?.toLowerCase().includes(searchQuery.toLowerCase())
+      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const totalPages = Math.ceil(filteredRecords.length / entriesPerPage);
   if (currentPage < totalPages) {
@@ -136,14 +186,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Entries per page dropdown (#entriesPerPage) not found; assuming default 10 entries per page');
   }
 
-  // Add event listener for search input
+  // Add event listener for search input with debounce
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', function () {
-      searchQuery = this.value;
-      currentPage = 1;
-      populateTable();
-    });
+    searchInput.addEventListener(
+      'input',
+      debounce(function () {
+        searchQuery = this.value;
+        currentPage = 1;
+        populateTable();
+      }, 300)
+    );
   } else {
     console.warn('Search input (#searchInput) not found; search functionality disabled');
   }

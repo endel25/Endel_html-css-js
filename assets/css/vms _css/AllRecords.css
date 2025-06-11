@@ -1,4 +1,44 @@
+/* Tooltip styling for personname column */
+.personname-cell {
+  position: relative;
+  cursor: pointer;
+}
 
+.personname-cell .tooltip {
+  visibility: hidden;
+  width: 200px;
+  background-color: #333;
+  color: #fff;
+  text-align: left;
+  border-radius: 4px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%; /* Position above the cell */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.personname-cell:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Ensure tooltip doesn't overflow off-screen */
+.personname-cell .tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; /* Arrow pointing down */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap');
         .dark .btn-primary {
             background-color: #6366f1;
