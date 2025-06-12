@@ -103,8 +103,8 @@ const menuItems = [
         path: '/Totalvisitorpasses.html',
         icon: `<svg class="shrink-0 group-hover:!text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>`,
+                <path d="M12 7v3m-3 2h6a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zm0 4h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+               </svg>`,
         display: () => hasPermission('Totalvisitorpasses', 'canRead'),
         sub: []
     },

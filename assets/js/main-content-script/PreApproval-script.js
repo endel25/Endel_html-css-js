@@ -53,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (name) {
             case 'firstname':
             case 'lastname':
-                if (value && !/^[a-zA-Z\s]{2,}$/.test(value)) {
-                    error = `${name === 'firstname' ? 'First' : 'Last'} name must be at least 2 characters and contain only letters`;
+                if (value && !/^[a-zA-Z\s]{1,}$/.test(value)) {
+                    error = `${name === 'firstname' ? 'First' : 'Last'} name must be at least 1 characters and contain only letters`;
                 }
                 break;
             case 'contactnumber':

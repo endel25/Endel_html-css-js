@@ -15,6 +15,10 @@
             color: #fff;
         }
 
+        .dark .action-btn {
+            color: #cbd5e1;
+        }
+
         /* Style the "Choose Photo" button */
         .choose-photo-btn {
             height: 34px;

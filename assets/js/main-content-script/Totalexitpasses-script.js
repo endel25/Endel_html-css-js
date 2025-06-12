@@ -128,6 +128,9 @@ function populateTable() {
             visitor.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             visitor.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             visitor.contactnumber?.includes(searchQuery) ||
+            visitor.date?.includes(searchQuery)||
+            visitor.time?.includes(searchQuery)||
+            visitor.type?.includes(searchQuery)||
             visitor.nationalid?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -185,6 +188,9 @@ function nextPage() {
             visitor.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             visitor.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             visitor.contactnumber?.includes(searchQuery) ||
+            visitor.date?.includes(searchQuery)||
+            visitor.time?.includes(searchQuery)||
+            visitor.type?.includes(searchQuery)||
             visitor.nationalid?.toLowerCase().includes(searchQuery.toLowerCase())
     );
     const totalPages = Math.ceil(filteredVisitors.length / entriesPerPage);

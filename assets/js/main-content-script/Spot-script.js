@@ -376,8 +376,8 @@ const validateField = (name, value, formData = {}) => {
     switch (name) {
         case 'firstname':
         case 'lastname':
-            if (value && !/^[a-zA-Z\s]{2,}$/.test(value)) {
-                error = `${name === 'firstname' ? 'First' : 'Last'} name must be at least 2 characters and contain only letters`;
+            if (value && !/^[a-zA-Z\s]{1,}$/.test(value)) {
+                error = `${name === 'firstname' ? 'First' : 'Last'} name must be at least 1 characters and contain only letters`;
             }
             break;
         case 'drivername':
@@ -469,7 +469,7 @@ function populateForm(formId, visitor) {
         return;
     }
 
-    const fields = ['firstname', 'lastname', 'contactnumber', 'email', 'gender'];
+    const fields = ['firstname', 'lastname', 'contactnumber', 'email', 'gender', 'nationalid'];
     fields.forEach(field => {
         const element = form.elements[field];
         if (element && visitor[field] !== undefined) {

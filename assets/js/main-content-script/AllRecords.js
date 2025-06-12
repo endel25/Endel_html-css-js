@@ -82,7 +82,14 @@ async function populateTable() {
       record.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.contactnumber?.includes(searchQuery) ||
-      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase())
+      record.date?.includes(searchQuery) ||
+      record.allocatedTime?.includes(searchQuery) ||
+      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.purpose?.includes(searchQuery) ||
+      record.host?.includes(searchQuery) ||
+      record.department?.includes(searchQuery) ||
+      record.visitortype?.includes(searchQuery) ||
+      record.recordType?.includes(searchQuery) 
   );
 
   // Calculate pagination
@@ -154,9 +161,16 @@ function nextPage() {
   const filteredRecords = records.filter(
     record =>
       record.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record | record.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.contactnumber?.includes(searchQuery) ||
-      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase())
+      record.date?.includes(searchQuery) ||
+      record.allocatedTime?.includes(searchQuery) ||
+      record.nationalId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.purpose?.includes(searchQuery) ||
+      record.host?.includes(searchQuery) ||
+      record.department?.includes(searchQuery) ||
+      record.visitortype?.includes(searchQuery) ||
+      record.recordType?.includes(searchQuery) 
   );
   const totalPages = Math.ceil(filteredRecords.length / entriesPerPage);
   if (currentPage < totalPages) {
